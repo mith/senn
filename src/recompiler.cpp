@@ -8,13 +8,15 @@
 #include <exception>
 #include <system_error>
 #include <uuid/uuid.h>
+#include <stdlib.h>
+#include <cstring>
 
 #include "recompiler.hpp"
 
 recompiler::recompiler(const std::string & lib_name)
     : source_dir("../src")
     , lib_name(lib_name)
-    , lib_filename ("lib" + lib_name + ".so")
+    , lib_filename ("./" + lib_name + "/lib" + lib_name + ".so")
 {
     fd = inotify_init();
     if (fd < 0) {
@@ -49,39 +51,55 @@ recompiler::recompiler(const std::string & lib_name)
 
             if (recompile_needed && !new_lib.valid()) {
                 new_lib = std::async(std::launch::async, [&](){
-                    if (unlink(lib_filename.c_str()) < 0) {
-                        std::cerr << "error removing old lib: " << errno << std::endl;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    recompile_needed = false;
+                    std::cout << "recompiling" << std::endl;
+                    try {
+                        compile();
+                        return std::experimental::make_optional(link());
+                    } catch (std::exception & e) {
+                        return std::experimental::optional<linked_lib>();
                     }
-                    if (current_lib.handle != nullptr) {
-                        unload(current_lib.handle);
-                    }
-                    compile();
-                    return link();
                 });
-                recompile_needed = false;
             }
         }
     });
     current_lib = link();
 }
 
-lib_functions recompiler::refresh_lib()
+recompiler::~recompiler()
 {
+    remove(current_lib.filename);
+}
+
+bool recompiler::refresh_lib(lib_functions & fns)
+{
+    if (fns.init == nullptr) {
+        fns = current_lib.functions;
+    }
     if (new_lib.valid()) {
         auto status = new_lib.wait_for(std::chrono::seconds(0));
         if (status == std::future_status::ready) {
-            current_lib = new_lib.get();
+            auto m_lib = new_lib.get();
+            if (m_lib) {
+                unload(current_lib);
+                current_lib = m_lib.value();
+                fns = current_lib.functions;
+                return true;
+            }
         }
     }
-    return current_lib.functions;
+    return false;
 }
 
-void recompiler::unload(void * lib_handle)
+void recompiler::unload(linked_lib & lib)
 {
-    int err = dlclose(lib_handle);
+    int err = dlclose(lib.handle);
     if (err != 0) {
         std::cerr << "error unloading lib: " << dlerror() << std::endl;
     }
+    std::cout << "removing " << lib.filename << std::endl;
+    remove(lib.filename);
 }
 
 void recompiler::compile()
@@ -95,7 +113,15 @@ void recompiler::compile()
 linked_lib recompiler::link()
 {
     linked_lib new_lib;
-    new_lib.handle = dlopen(("./" + lib_filename).c_str(), RTLD_LAZY);
+    auto tmpfilename = lib_filename + "XXXXXX";
+    new_lib.filename = new char[tmpfilename.length() + 1];
+    strcpy(new_lib.filename, tmpfilename.c_str());
+    int tmpfile = mkstemp(new_lib.filename);
+    close(tmpfile);
+    std::system(("cp " + lib_filename + " " + new_lib.filename).c_str());
+    std::cout << new_lib.filename << std::endl;
+    new_lib.handle = dlopen(new_lib.filename, RTLD_LAZY);
+    std::cout << "new handle: " << new_lib.handle << std::endl;
     if (new_lib.handle == nullptr) {
         throw std::runtime_error(std::string(dlerror()));
     }

@@ -1,7 +1,14 @@
 #pragma once
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+struct renderer_state {
+    GLFWwindow* window;
+};
+
 extern "C" {
-    void init();
-    void update();
-    void tick();
+    renderer_state* init();
+    void update(renderer_state*);
+    void tick(renderer_state*);
 }
