@@ -4,18 +4,23 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <memory>
 
-#include "shader_loader.hpp"
+#include "shaderloader.hpp"
 #include "scene.hpp"
 
-struct renderer_state {
+struct RendererState {
     GLFWwindow* window;
-    scene loaded_scene;
-    shader_loader sh_loader;
+    std::unique_ptr<Scene> loaded_scene;
+    std::unique_ptr<ShaderLoader> shader_loader;
+    RendererState()
+    {
+        shader_loader = std::make_unique<ShaderLoader>("../shaders");
+    }
 };
 
 extern "C" {
-renderer_state* init(GLFWwindow*);
-void update(renderer_state*);
-void tick(renderer_state*);
+RendererState* init(GLFWwindow*);
+void update(RendererState*);
+void tick(RendererState*);
 }

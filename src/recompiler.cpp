@@ -1,3 +1,5 @@
+#include "recompiler.hpp"
+
 #include <sys/types.h>
 #include <sys/inotify.h>
 #include <cerrno>
@@ -11,24 +13,21 @@
 #include <stdlib.h>
 #include <cstring>
 
-#include "recompiler.hpp"
-
-recompiler::recompiler(const std::string& lib_name)
+Recompiler::Recompiler(const std::string& lib_name)
     : source_dir("../src")
     , lib_name(lib_name)
     , lib_filename("./" + lib_name + "/lib" + lib_name + ".so")
 {
     fd = inotify_init();
     if (fd < 0) {
-        std::cerr << "error initializing inotify: " << errno << std::endl;
+        throw std::runtime_error(strerror(errno));
     }
     std::string watch_dir = source_dir + "/" + lib_name;
     wd = inotify_add_watch(fd,
         watch_dir.c_str(),
         IN_MODIFY | IN_CREATE | IN_DELETE);
     if (wd < 0) {
-        std::cerr << "error setting watch: " << errno << std::endl;
-        std::cerr << "attempted watch dir: " << watch_dir << std::endl;
+        throw std::runtime_error(strerror(errno));
     }
     watcher = std::thread([&](void) {
         bool recompile_needed = true;
@@ -38,7 +37,9 @@ recompiler::recompiler(const std::string& lib_name)
             if (len < 0) {
                 if (errno == EINTR) {
                 } else {
-                    std::cerr << "error reading inotify events: " << errno << std::endl;
+                    std::cerr << "error reading inotify events: " 
+                              << strerror(errno) 
+                              << std::endl;
                 }
             }
             int i = 0;
@@ -58,7 +59,7 @@ recompiler::recompiler(const std::string& lib_name)
                         compile();
                         return std::experimental::make_optional(link());
                     } catch (std::exception & e) {
-                        return std::experimental::optional<linked_lib>();
+                        return std::experimental::optional<LinkedLib>();
                     }
                 });
             }
@@ -67,12 +68,12 @@ recompiler::recompiler(const std::string& lib_name)
     current_lib = link();
 }
 
-recompiler::~recompiler()
+Recompiler::~Recompiler()
 {
     remove(current_lib.filename);
 }
 
-bool recompiler::refresh_lib(lib_functions& fns)
+bool Recompiler::refresh_lib(LibFunctions& fns)
 {
     if (fns.init == nullptr) {
         fns = current_lib.functions;
@@ -92,7 +93,7 @@ bool recompiler::refresh_lib(lib_functions& fns)
     return false;
 }
 
-void recompiler::unload(linked_lib& lib)
+void Recompiler::unload(LinkedLib& lib)
 {
     int err = dlclose(lib.handle);
     if (err != 0) {
@@ -102,7 +103,7 @@ void recompiler::unload(linked_lib& lib)
     remove(lib.filename);
 }
 
-void recompiler::compile()
+void Recompiler::compile()
 {
     int err = std::system("ninja");
     if (err != 0) {
@@ -110,9 +111,9 @@ void recompiler::compile()
     }
 }
 
-linked_lib recompiler::link()
+LinkedLib Recompiler::link()
 {
-    linked_lib new_lib;
+    LinkedLib new_lib;
     auto tmpfilename = lib_filename + "XXXXXX";
     new_lib.filename = new char[tmpfilename.length() + 1];
     strcpy(new_lib.filename, tmpfilename.c_str());

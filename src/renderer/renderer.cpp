@@ -13,28 +13,27 @@
 #include "lodepng.h"
 #include "scene.hpp"
 
-renderer_state* init(GLFWwindow* window)
+RendererState* init(GLFWwindow* window)
 {
-    auto state = new renderer_state();
+    auto state = new RendererState();
     state->window = window;
-    state->loaded_scene = scene::load_from_file("../scenes/cornell.yaml");
-    state-
+    state->loaded_scene = std::make_unique<Scene>(Scene::load_from_file("../scenes/cornell.yaml", state->shader_loader.get()));
     return state;
 }
 
-void update(renderer_state* state)
+void update(RendererState* state)
 {
     glfwMakeContextCurrent(state->window);
     ImGui::GetStyle().WindowRounding = 0.0f;
 }
 
-void tick(renderer_state* state)
+void tick(RendererState* state)
 {
 
     glDisable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    state->loaded_scene.render();
+    state->loaded_scene->render();
 
     ImGuiIO& imgio = ImGui::GetIO();
     ImGui::Value("FPS", imgio.Framerate);
@@ -42,9 +41,9 @@ void tick(renderer_state* state)
 
     ImGui::Begin("Positions");
 
-    for (size_t i = 0; i < state->loaded_scene.objects_attributes.size(); i++) {
-        auto & oa = state->loaded_scene.objects_attributes[i];
-        ImGui::Value(std::to_string(i).c_str(), oa.position.z);
+    for (size_t i = 0; i < state->loaded_scene->objects_attributes.size(); i++) {
+        auto& objects_attributes = state->loaded_scene->objects_attributes[i];
+        ImGui::Value(std::to_string(i).c_str(), objects_attributes.position.z);
     }
     ImGui::End();
 }

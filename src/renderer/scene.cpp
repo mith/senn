@@ -13,47 +13,48 @@
 #include "meshloader.hpp"
 #include "gl_utils.hpp"
 #include "utils.hpp"
+#include "shaderloader.hpp"
 
-void scene::setup_vertex_array()
+void Scene::setup_Vertex_array()
 {
     glCreateVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer.name);
+    glBindBuffer(GL_ARRAY_BUFFER, Vertex_buffer.name);
     glEnableVertexArrayAttrib(vao, 0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glBindBuffer(GL_ARRAY_BUFFER, attribute_buffer.name);
     glEnableVertexArrayAttrib(vao, 1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_attributes), nullptr);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttribes), nullptr);
     glEnableVertexArrayAttrib(vao, 2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_attributes),
-        (void*)offsetof(vertex_attributes, texcoord));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribes),
+        (void*)offsetof(VertexAttribes, texcoord));
 }
 
-scene scene::load_from_file(const std::string& filename)
+Scene Scene::load_from_file(const std::string& filename, ShaderLoader* shader_loader)
 {
-    auto scene_file = YAML::LoadFile(filename);
+    auto Scene_file = YAML::LoadFile(filename);
 
-    scene s;
+    Scene scene;
+    scene.shader_loader = shader_loader;
 
-    std::vector<vertex> vertices;
-    std::vector<vertex_attributes> attributes;
+    std::vector<Vertex> vertices;
+    std::vector<VertexAttribes> attributes;
     std::vector<unsigned int> indices;
 
-    for (auto n : scene_file["objects"]) {
+    for (auto n : Scene_file["objects"]) {
         auto md = load_mesh(n["mesh"].as<std::string>());
 
-        draw_command draw;
+        DrawCommand draw;
         draw.index_count = md.indices.size();
-        draw.base_vertex = vertices.size();
+        draw.base_Vertex = vertices.size();
         draw.base_index = indices.size();
-        s.draw_commands.push_back(draw);
+        scene.DrawCommands.push_back(draw);
 
-        object_attributes obj_atr;
+        ObjectAttribes obj_atr;
         obj_atr.orientation = n["orientation"].as<glm::quat>();
         obj_atr.position = n["position"].as<glm::vec3>();
         obj_atr.scale = n["scale"].as<glm::vec3>();
-        s.objects_attributes.push_back(obj_atr);
-
+        scene.objects_attributes.push_back(obj_atr);
 
         vertices.insert(vertices.end(),
             md.vertices.begin(),
@@ -68,37 +69,33 @@ scene scene::load_from_file(const std::string& filename)
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, "creating object buffers\0");
 
-    glCreateBuffers(1, &s.vertex_buffer.name);
-    glObjectLabel(GL_BUFFER, s.vertex_buffer.name, -1, "vertice buffer\0");
-    glNamedBufferStorage(s.vertex_buffer.name, sizeof(vertex) * vertices.size(),
+    glCreateBuffers(1, &scene.Vertex_buffer.name);
+    glObjectLabel(GL_BUFFER, scene.Vertex_buffer.name, -1, "vertice buffer\0");
+    glNamedBufferStorage(scene.Vertex_buffer.name, sizeof(Vertex) * vertices.size(),
         vertices.data(), 0);
 
-    glCreateBuffers(1, &s.attribute_buffer.name);
-    glObjectLabel(GL_BUFFER, s.attribute_buffer.name, -1, "attributes buffer\0");
-    glNamedBufferStorage(s.attribute_buffer.name, sizeof(vertex_attributes) * attributes.size(),
+    glCreateBuffers(1, &scene.attribute_buffer.name);
+    glObjectLabel(GL_BUFFER, scene.attribute_buffer.name, -1, "attributes buffer\0");
+    glNamedBufferStorage(scene.attribute_buffer.name, sizeof(VertexAttribes) * attributes.size(),
         attributes.data(), 0);
 
-    glCreateBuffers(1, &s.indice_buffer.name);
-    glObjectLabel(GL_BUFFER, s.indice_buffer.name, -1, "indice buffer\0");
-    glNamedBufferStorage(s.indice_buffer.name, sizeof(unsigned int) * indices.size(),
+    glCreateBuffers(1, &scene.indice_buffer.name);
+    glObjectLabel(GL_BUFFER, scene.indice_buffer.name, -1, "indice buffer\0");
+    glNamedBufferStorage(scene.indice_buffer.name, sizeof(unsigned int) * indices.size(),
         indices.data(), 0);
 
-    s.setup_vertex_array();
+    scene.setup_Vertex_array();
 
     glPopDebugGroup();
 
-    auto vertex_shader_src = file_to_str("../shaders/simple.vert");
-    auto frag_shader_src = file_to_str("../shaders/simple.frag");
+    scene.shader = shader_loader->load_shader(ShaderDescriptor{"simple.vert", "simple.frag"});
 
-    s.shader = create_program({ create_shader(GL_VERTEX_SHADER, vertex_shader_src),
-        create_shader(GL_FRAGMENT_SHADER, frag_shader_src) });
-
-    return s;
+    return scene;
 }
 
-void scene::render()
+void Scene::render()
 {
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, "rendering scene");
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, "rendering Scene");
     glBindVertexArray(vao);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -111,14 +108,14 @@ void scene::render()
     glClearColor(0.1f, 0.14f, 0.1f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(shader);
+    glUseProgram(shader.name);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indice_buffer.name);
 
-    auto orientation_attrib = glGetUniformLocation(shader, "orientation");
-    auto translation_attrib = glGetUniformLocation(shader, "translation");
-    auto scale_attrib = glGetUniformLocation(shader, "scale");
+    auto orientation_attrib = glGetUniformLocation(shader.name, "orientation");
+    auto translation_attrib = glGetUniformLocation(shader.name, "translation");
+    auto scale_attrib = glGetUniformLocation(shader.name, "scale");
 
-    auto pers_mat_attrib = glGetUniformLocation(shader, "perspMat");
+    auto pers_mat_attrib = glGetUniformLocation(shader.name, "perspMat");
     auto pers_mat = glm::perspective(glm::radians(80.0f), 1.0f, 0.5f, 500.0f)
         * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f),
                         glm::vec3(0.0f, 0.0f, -1.0f),
@@ -128,8 +125,8 @@ void scene::render()
 
     float x = fmod((glfwGetTime() * 0.7), 2 * M_PI);
 
-    for (int d = 0; d < (int)draw_commands.size(); d++) {
-        auto& mesh = draw_commands[d];
+    for (int d = 0; d < (int)DrawCommands.size(); d++) {
+        auto& mesh = DrawCommands[d];
         auto& obj_atr = objects_attributes[d];
 
         auto rotation_matrix = glm::mat4_cast(glm::angleAxis((float)std::sin(x - M_PI) * 6,
@@ -143,7 +140,7 @@ void scene::render()
 
         glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count,
             GL_UNSIGNED_INT, (void*)(mesh.base_index * sizeof(unsigned int)),
-            mesh.base_vertex);
+            mesh.base_Vertex);
     }
     glPopDebugGroup();
 }

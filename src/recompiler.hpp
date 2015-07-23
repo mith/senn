@@ -15,11 +15,11 @@
 
 typedef void* (*arbitrary)();
 
-struct lib_functions {
-    renderer_state* (*init)(GLFWwindow*);
-    void (*update)(renderer_state*);
-    void (*tick)(renderer_state*);
-    lib_functions()
+struct LibFunctions {
+    RendererState* (*init)(GLFWwindow*);
+    void (*update)(RendererState*);
+    void (*tick)(RendererState*);
+    LibFunctions()
         : init(nullptr)
         , update(nullptr)
         , tick(nullptr)
@@ -27,34 +27,34 @@ struct lib_functions {
     }
 };
 
-struct linked_lib {
+struct LinkedLib {
     char* filename;
     void* handle;
-    lib_functions functions;
-    linked_lib()
+    LibFunctions functions;
+    LinkedLib()
         : handle(nullptr)
     {
     }
 };
 
-class recompiler {
+class Recompiler {
     int fd;
     int wd;
     std::thread watcher;
-    std::future<std::experimental::optional<linked_lib> > new_lib;
+    std::future<std::experimental::optional<LinkedLib> > new_lib;
 
-    linked_lib current_lib;
+    LinkedLib current_lib;
 
     const std::string source_dir;
     const std::string lib_name;
     const std::string lib_filename;
 
     void compile();
-    linked_lib link();
-    void unload(linked_lib&);
+    LinkedLib link();
+    void unload(LinkedLib&);
 
 public:
-    recompiler(const std::string& lib_name);
-    ~recompiler();
-    bool refresh_lib(lib_functions&);
+    Recompiler(const std::string& lib_name);
+    ~Recompiler();
+    bool refresh_lib(LibFunctions&);
 };

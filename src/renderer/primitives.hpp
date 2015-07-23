@@ -4,37 +4,37 @@
 #include <glm/gtc/quaternion.hpp>
 #include <GL/glew.h>
 
-struct vertex {
+struct Vertex {
     glm::vec3 position;
-    vertex(glm::vec3 position)
+    Vertex(glm::vec3 position)
         : position(position)
     {
     }
 };
 
-struct vertex_attributes {
+struct VertexAttribes {
     glm::vec3 normal;
     glm::vec2 texcoord;
-    vertex_attributes(glm::vec3 normal, glm::vec2 texcoord)
+    VertexAttribes(glm::vec3 normal, glm::vec2 texcoord)
         : normal(normal)
         , texcoord(texcoord)
     {
     }
 };
 
-struct object_attributes {
+struct ObjectAttribes {
     glm::quat orientation;
     glm::vec3 position;
     glm::vec3 scale;
 };
 
-struct draw_command {
+struct DrawCommand {
     GLint index_count;
-    GLint base_vertex;
+    GLint base_Vertex;
     GLint base_index;
 };
 
 template <typename T>
-struct buffer {
+struct Buffer {
     GLuint name;
 };

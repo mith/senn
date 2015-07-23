@@ -110,11 +110,12 @@ GLFWwindow* init_gl()
     glfwSwapInterval(1);
     return window;
 }
+
 int main()
 {
     auto window = init_gl();
-    recompiler rc("renderer");
-    lib_functions lib_fun;
+    Recompiler rc("renderer");
+    LibFunctions lib_fun;
     rc.refresh_lib(lib_fun);
     auto rs = lib_fun.init(window);
     ImGui_ImplGlfwGL3_Init(rs->window, true);

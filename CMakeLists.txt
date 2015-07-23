@@ -28,7 +28,7 @@ include_directories(${IMGUI_INCLUDE_DIR})
 add_subdirectory("src/renderer" "renderer")
 add_subdirectory("textures" "textures")
 
-set(senn_sources src/main.cpp src/recompiler.cpp src/glad/glad.c)
+set(senn_sources src/main.cpp src/recompiler.cpp)
 add_executable(senn ${senn_sources})
 
 set_property(TARGET senn PROPERTY CXX_STANDARD 14)

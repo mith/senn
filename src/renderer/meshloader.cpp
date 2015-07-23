@@ -9,7 +9,7 @@
 
 #include "iqm.h"
 
-mesh_data load_mesh(const std::string& filename)
+MeshData load_mesh(const std::string& filename)
 {
     using namespace boost::iostreams;
 
@@ -23,7 +23,7 @@ mesh_data load_mesh(const std::string& filename)
     const iqmvertexarray* uvva = vaptr + 1;
     const iqmvertexarray* normalva = vaptr + 2;
 
-    mesh_data mesh;
+    MeshData mesh;
     mesh.vertices.reserve(ih->num_vertexes);
     mesh.indices.reserve(ih->num_triangles);
 

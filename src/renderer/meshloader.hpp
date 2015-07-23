@@ -6,10 +6,10 @@
 
 #include "primitives.hpp"
 
-struct mesh_data {
-    std::vector<vertex> vertices;
-    std::vector<vertex_attributes> attributes;
+struct MeshData {
+    std::vector<Vertex> vertices;
+    std::vector<VertexAttribes> attributes;
     std::vector<unsigned int> indices;
 };
 
-mesh_data load_mesh(const std::string & filename);
+MeshData load_mesh(const std::string & filename);

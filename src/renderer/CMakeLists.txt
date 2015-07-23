@@ -7,7 +7,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto") 
 
-set(renderer_sources renderer.cpp utils.cpp gl_utils.cpp lodepng.cpp meshloader.cpp scene.cpp shader_loader.cpp)
+set(renderer_sources renderer.cpp utils.cpp 
+    gl_utils.cpp lodepng.cpp meshloader.cpp 
+    scene.cpp shaderloader.cpp)
 
 add_library(renderer SHARED ${renderer_sources})
 

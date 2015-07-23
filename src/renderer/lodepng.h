@@ -98,14 +98,14 @@ typedef enum LodePNGColorType
 #ifdef LODEPNG_COMPILE_DECODER
 /*
 Converts PNG data in memory to raw pixel data.
-out: Output parameter. Pointer to buffer that will contain the raw pixel data.
+out: Output parameter. Pointer to Buffer that will contain the raw pixel data.
      After decoding, its size is w * h * (bytes per pixel) bytes larger than
      initially. Bytes per pixel depends on colortype and bitdepth.
      Must be freed after usage with free(*out).
      Note: for 16-bit per channel colors, uses big endian format like PNG does.
 w: Output parameter. Pointer to width of pixel data.
 h: Output parameter. Pointer to height of pixel data.
-in: Memory buffer with the PNG file.
+in: Memory Buffer with the PNG file.
 insize: size of the in buffer.
 colortype: the desired color type for the raw output image. See explanation on PNG color types.
 bitdepth: the desired bit depth for the raw output image. See explanation on PNG color types.
@@ -149,10 +149,10 @@ Converts raw pixel data into a PNG image in memory. The colortype and bitdepth
   of the output PNG image cannot be chosen, they are automatically determined
   by the colortype, bitdepth and content of the input pixel data.
   Note: for 16-bit per channel colors, needs big endian format like PNG does.
-out: Output parameter. Pointer to buffer that will contain the PNG image data.
+out: Output parameter. Pointer to Buffer that will contain the PNG image data.
      Must be freed after usage with free(*out).
 outsize: Output parameter. Pointer to the size in bytes of the out buffer.
-image: The raw pixel data to encode. The size of this buffer should be
+image: The raw pixel data to encode. The size of this Buffer should be
        w * h * (bytes per pixel), bytes per pixel depends on colortype and bitdepth.
 w: width of the raw pixel data in pixels.
 h: height of the raw pixel data in pixels.
@@ -385,7 +385,7 @@ In detail, it returns true only if it's a color type with alpha, or has a palett
 or if "key_defined" is true.
 */
 unsigned lodepng_can_have_alpha(const LodePNGColorMode* info);
-/*Returns the byte size of a raw image buffer with given width, height and color mode*/
+/*Returns the byte size of a raw image Buffer with given width, height and color mode*/
 size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color);
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
@@ -468,7 +468,7 @@ typedef struct LodePNGInfo
   /*
   unknown chunks
   There are 3 buffers, one for each position in the PNG where unknown chunks can appear
-  each buffer contains all unknown chunks for that position consecutively
+  each Buffer contains all unknown chunks for that position consecutively
   The 3 buffers are the unknown chunks between certain critical chunks:
   0: IHDR-PLTE, 1: PLTE-IDAT, 2: IDAT-IEND
   Do not allocate or traverse this data yourself. Use the chunk traversing functions declared
@@ -495,11 +495,11 @@ unsigned lodepng_add_itext(LodePNGInfo* info, const char* key, const char* langt
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 
 /*
-Converts raw buffer from one color type to another color type, based on
+Converts raw Buffer from one color type to another color type, based on
 LodePNGColorMode structs to describe the input and output color type.
 See the reference manual at the end of this header file to see which color conversions are supported.
 return value = LodePNG error code (0 if all went ok, an error if the conversion isn't supported)
-The out buffer must have size (w * h * bpp + 7) / 8, where bpp is the bits per pixel
+The out Buffer must have size (w * h * bpp + 7) / 8, where bpp is the bits per pixel
 of the output color type (lodepng_get_bpp).
 For < 8 bpp images, there should not be padding bits at the end of scanlines.
 For 16-bit per channel colors, uses big endian format like PNG does.
@@ -594,7 +594,7 @@ typedef struct LodePNGEncoderSettings
   /*Which filter strategy to use when not using zeroes due to filter_palette_zero.
   Set filter_palette_zero to 0 to ensure always using your chosen strategy. Default: LFS_MINSUM*/
   LodePNGFilterStrategy filter_strategy;
-  /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a buffer with
+  /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a Buffer with
   the same length as the amount of scanlines in the image, and each value must <= 5. You
   have to cleanup this buffer, LodePNG will never free it. Don't forget that filter_palette_zero
   must be set to 0 to ensure this is also used on palette or low bitdepth images.*/
@@ -661,7 +661,7 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h,
 
 
 #ifdef LODEPNG_COMPILE_ENCODER
-/*This function allocates the out buffer with standard malloc and stores the size in *outsize.*/
+/*This function allocates the out Buffer with standard malloc and stores the size in *outsize.*/
 unsigned lodepng_encode(unsigned char** out, size_t* outsize,
                         const unsigned char* image, unsigned w, unsigned h,
                         LodePNGState* state);
@@ -745,13 +745,13 @@ part of zlib that is required for PNG, it does not support dictionaries.
 */
 
 #ifdef LODEPNG_COMPILE_DECODER
-/*Inflate a buffer. Inflate is the decompression step of deflate. Out buffer must be freed after use.*/
+/*Inflate a buffer. Inflate is the decompression step of deflate. Out Buffer must be freed after use.*/
 unsigned lodepng_inflate(unsigned char** out, size_t* outsize,
                          const unsigned char* in, size_t insize,
                          const LodePNGDecompressSettings* settings);
 
 /*
-Decompresses Zlib data. Reallocates the out buffer and appends the data. The
+Decompresses Zlib data. Reallocates the out Buffer and appends the data. The
 data must be according to the zlib specification.
 Either, *out must be NULL and *outsize must be 0, or, *out must be a valid
 buffer and *outsize its size in bytes. out must be freed by user after usage.
@@ -763,7 +763,7 @@ unsigned lodepng_zlib_decompress(unsigned char** out, size_t* outsize,
 
 #ifdef LODEPNG_COMPILE_ENCODER
 /*
-Compresses data with Zlib. Reallocates the out buffer and appends the data.
+Compresses data with Zlib. Reallocates the out Buffer and appends the data.
 Zlib adds a small header and trailer around the deflate data.
 The data is output in the format of the zlib specification.
 Either, *out must be NULL and *outsize must be 0, or, *out must be a valid
@@ -780,7 +780,7 @@ public interface only for tests, it's used internally by lodepng_deflate.
 unsigned lodepng_huffman_code_lengths(unsigned* lengths, const unsigned* frequencies,
                                       size_t numcodes, unsigned maxbitlen);
 
-/*Compress a buffer with deflate. See RFC 1951. Out buffer must be freed after use.*/
+/*Compress a Buffer with deflate. See RFC 1951. Out Buffer must be freed after use.*/
 unsigned lodepng_deflate(unsigned char** out, size_t* outsize,
                          const unsigned char* in, size_t insize,
                          const LodePNGCompressSettings* settings);
@@ -800,10 +800,10 @@ return value: error code (0 means ok)
 unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename);
 
 /*
-Save a file from buffer to disk. Warning, if it exists, this function overwrites
+Save a file from Buffer to disk. Warning, if it exists, this function overwrites
 the file without warning!
-buffer: the buffer to write
-buffersize: size of the buffer to write
+buffer: the Buffer to write
+buffersize: size of the Buffer to write
 filename: the path to the file to save to
 return value: error code (0 means ok)
 */
@@ -861,7 +861,7 @@ void save_file(const std::vector<unsigned char>& buffer, const std::string& file
 
 #ifdef LODEPNG_COMPILE_ZLIB
 #ifdef LODEPNG_COMPILE_DECODER
-/* Zlib-decompress an unsigned char buffer */
+/* Zlib-decompress an unsigned char Buffer */
 unsigned decompress(std::vector<unsigned char>& out, const unsigned char* in, size_t insize,
                     const LodePNGDecompressSettings& settings = lodepng_default_decompress_settings);
 
@@ -871,7 +871,7 @@ unsigned decompress(std::vector<unsigned char>& out, const std::vector<unsigned 
 #endif /* LODEPNG_COMPILE_DECODER */
 
 #ifdef LODEPNG_COMPILE_ENCODER
-/* Zlib-compress an unsigned char buffer */
+/* Zlib-compress an unsigned char Buffer */
 unsigned compress(std::vector<unsigned char>& out, const unsigned char* in, size_t insize,
                   const LodePNGCompressSettings& settings = lodepng_default_compress_settings);
 
@@ -984,7 +984,7 @@ The following features are supported by the decoder:
    or the same color type as the PNG
 *) encoding of PNGs, from any raw image to 24- or 32-bit color, or the same color type as the raw image
 *) Adam7 interlace and deinterlace for any color type
-*) loading the image from harddisk or decoding it from a buffer from other sources than harddisk
+*) loading the image from harddisk or decoding it from a Buffer from other sources than harddisk
 *) support for alpha channels, including RGBA color model, translucent palettes and color keying
 *) zlib decompression (inflate)
 *) zlib compression (deflate)
@@ -1107,7 +1107,7 @@ color type information in the LodePNGInfo.
 5. Encoding
 -----------
 
-Encoding converts a raw pixel buffer to a PNG compressed image.
+Encoding converts a raw pixel Buffer to a PNG compressed image.
 
 Most documentation on using the encoder is at its declarations in the header
 above. For C, simple encoding can be done with functions such as
@@ -1320,8 +1320,8 @@ converting to/from all that is outside the scope of LodePNG.
 This may mean that, depending on your use case, you may want to convert the big
 endian output of LodePNG to little endian with a for loop. This is certainly not
 always needed, many applications and libraries support big endian 16-bit colors
-anyway, but it means you cannot simply cast the unsigned char* buffer to an
-unsigned short* buffer on x86 CPUs.
+anyway, but it means you cannot simply cast the unsigned char* Buffer to an
+unsigned short* Buffer on x86 CPUs.
 
 
 7. error values
@@ -1355,13 +1355,13 @@ length bytes data
 8.1. iterating through chunks
 -----------------------------
 
-If you have a buffer containing the PNG image data, then the first chunk (the
+If you have a Buffer containing the PNG image data, then the first chunk (the
 IHDR chunk) starts at byte number 8 of that buffer. The first 8 bytes are the
 signature of the PNG and are not part of a chunk. But if you start at byte 8
 then you have a chunk, and can check the following things of it.
 
-NOTE: none of these functions check for memory buffer boundaries. To avoid
-exploits, always make sure the buffer contains all the data of the chunks.
+NOTE: none of these functions check for memory Buffer boundaries. To avoid
+exploits, always make sure the Buffer contains all the data of the chunks.
 When using lodepng_chunk_next, make sure the returned value is within the
 allocated memory.
 
@@ -1397,9 +1397,9 @@ Check if the crc is correct or generate a correct one.
 unsigned char* lodepng_chunk_next(unsigned char* chunk):
 const unsigned char* lodepng_chunk_next_const(const unsigned char* chunk):
 
-Iterate to the next chunk. This works if you have a buffer with consecutive chunks. Note that these
+Iterate to the next chunk. This works if you have a Buffer with consecutive chunks. Note that these
 functions do no boundary checking of the allocated data whatsoever, so make sure there is enough
-data available in the buffer to be able to go to the next chunk.
+data available in the Buffer to be able to go to the next chunk.
 
 unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsigned char* chunk):
 unsigned lodepng_chunk_create(unsigned char** out, size_t* outlength, unsigned length,

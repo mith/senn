@@ -7,21 +7,24 @@
 #include <glm/glm.hpp>
 
 #include "primitives.hpp"
+#include "shaderloader.hpp"
 
-class scene {
-    void setup_vertex_array();
+class Scene {
+    ShaderLoader* shader_loader;
+    void setup_Vertex_array();
+    Scene();
 
 public:
-    GLuint shader;
+    Shader shader;
     GLuint vao;
 
-    buffer<vertex> vertex_buffer;
-    buffer<vertex_attributes> attribute_buffer;
-    buffer<unsigned int> indice_buffer;
-    std::vector<draw_command> draw_commands;
-    std::vector<object_attributes> objects_attributes;
+    Buffer<Vertex> Vertex_buffer;
+    Buffer<VertexAttribes> attribute_buffer;
+    Buffer<unsigned int> indice_buffer;
+    std::vector<DrawCommand> DrawCommands;
+    std::vector<ObjectAttribes> objects_attributes;
 
-    static scene load_from_file(const std::string& filename);
+    static Scene load_from_file(const std::string& filename, ShaderLoader*);
 
     void render();
 };
