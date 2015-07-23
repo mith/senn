@@ -32,8 +32,11 @@ Recompiler::Recompiler(const std::string& lib_name)
     watcher = std::thread([&](void) {
         bool recompile_needed = true;
         while(true) {
-            char buf[BUF_LEN];
-            int len = read(fd, buf, BUF_LEN);
+            const size_t event_size = sizeof(inotify_event);
+            const size_t buf_len = 1024 * (event_size + 16);
+
+            char buf[buf_len];
+            int len = read(fd, buf, buf_len);
             if (len < 0) {
                 if (errno == EINTR) {
                 } else {
@@ -47,7 +50,7 @@ Recompiler::Recompiler(const std::string& lib_name)
                 struct inotify_event * event;
                 event = (struct inotify_event*) &buf[i];
                 recompile_needed = true;
-                i += EVENT_SIZE + event->len;
+                i += event_size + event->len;
             }
 
             if (recompile_needed && !new_lib.valid()) {

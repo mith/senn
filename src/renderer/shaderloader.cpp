@@ -17,9 +17,6 @@ ShaderLoader::ShaderLoader(const std::string& shader_dir)
     start();
 }
 
-#define EVENT_SIZE (sizeof(struct inotify_event))
-#define BUF_LEN (1024 * (EVENT_SIZE + 16))
-
 void ShaderLoader::watch_shader_dir()
 {
     int fd = inotify_init();
@@ -32,8 +29,11 @@ void ShaderLoader::watch_shader_dir()
                                      + shader_dir + std::string(" ") + strerror(errno));
     }
 
+    const size_t event_size = sizeof(inotify_event);
+    const size_t buf_len = 1024 * (event_size + 16);
+
     pollfd pfd = { fd, POLLIN, 0 };
-    char buf[BUF_LEN];
+    char buf[buf_len];
 
     while (watcher_should_run) {
         int ret = poll(&pfd, 1, 500);
@@ -41,13 +41,13 @@ void ShaderLoader::watch_shader_dir()
             std::cerr << "shader poll failed: " << strerror(errno) << std::endl;
         }
         else if (ret > 0) {
-            int len = read(fd, buf, BUF_LEN);
+            int len = read(fd, buf, buf_len);
             int i = 0;
             while (len < 0) {
                 inotify_event* event;
                 event = (inotify_event*)&buf[i];
                 shaders_up_to_date.clear();
-                i += EVENT_SIZE + event->len;
+                i += event_size + event->len;
             }
         }
     }
