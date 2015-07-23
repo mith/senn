@@ -7,23 +7,24 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto") 
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
-
-find_package(PkgConfig REQUIRED)
-pkg_search_module(GLFW REQUIRED glfw3)
-find_package(GLM REQUIRED)
-set(GLI_PACKAGE_DIR "/usr/include")
-find_package(GLI REQUIRED)
-
-set(renderer_sources renderer.cpp ../glad.c)
+set(renderer_sources renderer.cpp utils.cpp gl_utils.cpp lodepng.cpp meshloader.cpp scene.cpp shader_loader.cpp)
 
 add_library(renderer SHARED ${renderer_sources})
 
 set_property(TARGET renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET renderer PROPERTY CXX_STANDARD_REQUIRED 14)
 
+
 include_directories(${GLFW_INCLUDE_DIR} 
                     ${IMGUI_INCLUDE_DIR}
-                    ${GLM_INCLUDE_DIR})
+                    ${BOOST_INCLUDE_DIR}
+                    ${GLM_INCLUDE_DIR}
+                    ${YAML_INCLUDE_DIR})
 
-target_link_libraries(renderer ${GLFW_LIBRARIES} imgui)
+target_link_libraries(renderer ${GLFW_LIBRARIES} 
+                               ${GLBINDING_LIBRARIES} 
+                               ${Boost_LIBRARIES}
+                               ${GLEW_LIBRARIES}
+                               ${YAML_LIBRARIES}
+                               ktx
+                               imgui)

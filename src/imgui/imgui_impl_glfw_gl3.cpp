@@ -4,9 +4,9 @@
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.hpp"
 
-// GL3W/GLFW
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #ifdef _MSC_VER
 #undef APIENTRY
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -145,9 +145,9 @@ void ImGui_ImplGlfwGL3_CreateFontsTexture()
 
     glGenTextures(1, &g_FontTexture);
     glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     // Store our identifier
     io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;

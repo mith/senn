@@ -13,24 +13,24 @@
 
 #include "recompiler.hpp"
 
-recompiler::recompiler(const std::string & lib_name)
+recompiler::recompiler(const std::string& lib_name)
     : source_dir("../src")
     , lib_name(lib_name)
-    , lib_filename ("./" + lib_name + "/lib" + lib_name + ".so")
+    , lib_filename("./" + lib_name + "/lib" + lib_name + ".so")
 {
     fd = inotify_init();
     if (fd < 0) {
         std::cerr << "error initializing inotify: " << errno << std::endl;
     }
     std::string watch_dir = source_dir + "/" + lib_name;
-    wd = inotify_add_watch(fd, 
-                           watch_dir.c_str(), 
-                           IN_MODIFY | IN_CREATE | IN_DELETE);
+    wd = inotify_add_watch(fd,
+        watch_dir.c_str(),
+        IN_MODIFY | IN_CREATE | IN_DELETE);
     if (wd < 0) {
         std::cerr << "error setting watch: " << errno << std::endl;
         std::cerr << "attempted watch dir: " << watch_dir << std::endl;
     }
-    watcher = std::thread([&](void){
+    watcher = std::thread([&](void) {
         bool recompile_needed = true;
         while(true) {
             char buf[BUF_LEN];
@@ -72,7 +72,7 @@ recompiler::~recompiler()
     remove(current_lib.filename);
 }
 
-bool recompiler::refresh_lib(lib_functions & fns)
+bool recompiler::refresh_lib(lib_functions& fns)
 {
     if (fns.init == nullptr) {
         fns = current_lib.functions;
@@ -92,7 +92,7 @@ bool recompiler::refresh_lib(lib_functions & fns)
     return false;
 }
 
-void recompiler::unload(linked_lib & lib)
+void recompiler::unload(linked_lib& lib)
 {
     int err = dlclose(lib.handle);
     if (err != 0) {

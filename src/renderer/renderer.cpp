@@ -1,13 +1,24 @@
 #include "renderer.hpp"
 #include <iostream>
 #include <cstdlib>
+#include <array>
 
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.hpp>
 
-renderer_state* init()
+#define KTX_OPENGL 1
+#include <ktx.h>
+#include "gl_utils.hpp"
+#include "utils.hpp"
+#include "lodepng.h"
+#include "scene.hpp"
+
+renderer_state* init(GLFWwindow* window)
 {
     auto state = new renderer_state();
+    state->window = window;
+    state->loaded_scene = scene::load_from_file("../scenes/cornell.yaml");
+    state-
     return state;
 }
 
@@ -19,11 +30,21 @@ void update(renderer_state* state)
 
 void tick(renderer_state* state)
 {
-    glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 
-    ImGuiIO & imgio = ImGui::GetIO();
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    state->loaded_scene.render();
+
+    ImGuiIO& imgio = ImGui::GetIO();
     ImGui::Value("FPS", imgio.Framerate);
     ImGui::Value("Frametime(ms)", imgio.DeltaTime * 1000);
-    //glfwSwapBuffers(state->window);
+
+    ImGui::Begin("Positions");
+
+    for (size_t i = 0; i < state->loaded_scene.objects_attributes.size(); i++) {
+        auto & oa = state->loaded_scene.objects_attributes[i];
+        ImGui::Value(std::to_string(i).c_str(), oa.position.z);
+    }
+    ImGui::End();
 }

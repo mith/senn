@@ -1,0 +1,25 @@
+objects: 
+    - mesh: "sphere"
+      position: [0.0, 0.0, -1.0]
+      scale: [10.8, 10.8, 10.8]
+      orientation: [0.0, 0.0, 0.0, 0.0]
+      material: 0
+    - mesh: "cornell"
+      position: [0.0, 0.0, -100.0]
+      orientation: [0.0, -0.7071045443232221, 0.0, 0.7071090180427968]
+      scale: [25.0, 25.0, 25.0]
+      material: 1
+
+lights:
+    - color: [3.0, 3.0, 3.0]
+      location: [0.0, 10.0, -70.0]
+      radius: 120
+
+materials:
+    - diffuse: "sphere_diffuse"
+      fresnel0: 0.04
+      roughness: 0.1
+    - diffuse: "cornell_diffuse"
+      fresnel0: 0.04
+      roughness: 0.8
+

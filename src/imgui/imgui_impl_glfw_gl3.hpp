@@ -1,3 +1,4 @@
+#pragma once
 // ImGui GLFW binding with OpenGL3 + shaders
 // https://github.com/ocornut/imgui
 
