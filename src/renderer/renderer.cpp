@@ -3,14 +3,11 @@
 #include <cstdlib>
 #include <array>
 
-#include <imgui.h>
-#include <imgui_impl_glfw_gl3.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw_gl3.hpp>
 
-#define KTX_OPENGL 1
-#include <ktx.h>
 #include "gl_utils.hpp"
 #include "utils.hpp"
-#include "lodepng.h"
 #include "scene.hpp"
 
 RendererState* init(GLFWwindow* window)

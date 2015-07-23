@@ -12,4 +12,4 @@ struct MeshData {
     std::vector<unsigned int> indices;
 };
 
-MeshData load_mesh(const std::string & filename);
+MeshData load_mesh(const std::string& filename);

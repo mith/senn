@@ -15,7 +15,7 @@
 #include "utils.hpp"
 #include "shaderloader.hpp"
 
-void Scene::setup_Vertex_array()
+void Scene::setup_vertex_array()
 {
     glCreateVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -46,9 +46,9 @@ Scene Scene::load_from_file(const std::string& filename, ShaderLoader* shader_lo
 
         DrawCommand draw;
         draw.index_count = md.indices.size();
-        draw.base_Vertex = vertices.size();
+        draw.base_vertex = vertices.size();
         draw.base_index = indices.size();
-        scene.DrawCommands.push_back(draw);
+        scene.draw_commands.push_back(draw);
 
         ObjectAttribes obj_atr;
         obj_atr.orientation = n["orientation"].as<glm::quat>();
@@ -84,7 +84,7 @@ Scene Scene::load_from_file(const std::string& filename, ShaderLoader* shader_lo
     glNamedBufferStorage(scene.indice_buffer.name, sizeof(unsigned int) * indices.size(),
         indices.data(), 0);
 
-    scene.setup_Vertex_array();
+    scene.setup_vertex_array();
 
     glPopDebugGroup();
 
@@ -125,8 +125,8 @@ void Scene::render()
 
     float x = fmod((glfwGetTime() * 0.7), 2 * M_PI);
 
-    for (int d = 0; d < (int)DrawCommands.size(); d++) {
-        auto& mesh = DrawCommands[d];
+    for (int d = 0; d < (int)draw_commands.size(); d++) {
+        auto& mesh = draw_commands[d];
         auto& obj_atr = objects_attributes[d];
 
         auto rotation_matrix = glm::mat4_cast(glm::angleAxis((float)std::sin(x - M_PI) * 6,
@@ -140,7 +140,7 @@ void Scene::render()
 
         glDrawElementsBaseVertex(GL_TRIANGLES, mesh.index_count,
             GL_UNSIGNED_INT, (void*)(mesh.base_index * sizeof(unsigned int)),
-            mesh.base_Vertex);
+            mesh.base_vertex);
     }
     glPopDebugGroup();
 }

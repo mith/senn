@@ -8,14 +8,13 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto") 
 
 set(renderer_sources renderer.cpp utils.cpp 
-    gl_utils.cpp lodepng.cpp meshloader.cpp 
+    gl_utils.cpp meshloader.cpp 
     scene.cpp shaderloader.cpp)
 
 add_library(renderer SHARED ${renderer_sources})
 
 set_property(TARGET renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET renderer PROPERTY CXX_STANDARD_REQUIRED 14)
-
 
 include_directories(${GLFW_INCLUDE_DIR} 
                     ${IMGUI_INCLUDE_DIR}
@@ -28,5 +27,6 @@ target_link_libraries(renderer ${GLFW_LIBRARIES}
                                ${Boost_LIBRARIES}
                                ${GLEW_LIBRARIES}
                                ${YAML_LIBRARIES}
+                               lodepng
                                ktx
                                imgui)

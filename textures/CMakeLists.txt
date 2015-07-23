@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.2)
 project (textures)
 
 find_program(TC_COMMAND tc)
-message(${TC_COMMAND})
 
 function(compress_to_ktx filename outputfiles)
     get_filename_component(base ${filename} NAME_WE)
@@ -19,12 +18,7 @@ endfunction()
 
 file(GLOB texture_files *.png)
 foreach(file ${texture_files})
-    message(${file})
     compress_to_ktx(${file} OUTPUTFILES)
 endforeach()
 
 add_custom_target(textures DEPENDS ${OUTPUTFILES})
-
-foreach(file ${OUTPUTFILES})
-    message(${file})
-endforeach()

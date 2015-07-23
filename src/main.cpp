@@ -5,8 +5,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw_gl3.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw_gl3.hpp>
 
 #include "recompiler.hpp"
 #include "renderer/renderer.hpp"

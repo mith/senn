@@ -11,7 +11,7 @@
 
 class Scene {
     ShaderLoader* shader_loader;
-    void setup_Vertex_array();
+    void setup_vertex_array();
     Scene();
 
 public:
@@ -21,7 +21,7 @@ public:
     Buffer<Vertex> Vertex_buffer;
     Buffer<VertexAttribes> attribute_buffer;
     Buffer<unsigned int> indice_buffer;
-    std::vector<DrawCommand> DrawCommands;
+    std::vector<DrawCommand> draw_commands;
     std::vector<ObjectAttribes> objects_attributes;
 
     static Scene load_from_file(const std::string& filename, ShaderLoader*);

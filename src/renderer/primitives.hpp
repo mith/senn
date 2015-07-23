@@ -30,7 +30,7 @@ struct ObjectAttribes {
 
 struct DrawCommand {
     GLint index_count;
-    GLint base_Vertex;
+    GLint base_vertex;
     GLint base_index;
 };
 

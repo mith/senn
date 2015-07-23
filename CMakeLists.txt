@@ -20,9 +20,11 @@ find_package(OpenGL REQUIRED)
 include_directories("./include" 
                     ${GLBINDING_INCLUDE_DIR}
                     ${GLFW_INCLUDE_DIR}
-                    ${YAML_INCLUDE_DIR})
+                    ${YAML_INCLUDE_DIR}
+                    "./third_party")
 
-add_subdirectory("src/imgui" "imgui")
+add_subdirectory("third_party/imgui" "imgui")
+add_subdirectory("third_party/lodepng" "lodepng")
 include_directories(${IMGUI_INCLUDE_DIR})
 
 add_subdirectory("src/renderer" "renderer")
@@ -43,5 +45,13 @@ target_link_libraries(senn dl
                            ${GLEW_LIBRARIES}
                            imgui)
 
-add_dependencies(senn textures)
+file(GLOB_RECURSE src_files src/*)
 
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/tags
+    COMMAND ctags -R src/
+    DEPENDS ${src_files}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(tags_file DEPENDS ${CMAKE_SOURCE_DIR}/tags)
+
+add_dependencies(senn textures tags_file)
