@@ -10,18 +10,17 @@
 
 #include "renderer/renderer.hpp"
 
-#define EVENT_SIZE (sizeof(struct inotify_event))
-#define BUF_LEN (1024 * (EVENT_SIZE + 16))
-
 typedef void* (*arbitrary)();
 
 struct LibFunctions {
     RendererState* (*init)(GLFWwindow*);
-    void (*update)(RendererState*);
+    void (*suspend)(RendererState*);
+    void (*resume)(RendererState*);
     void (*tick)(RendererState*);
     LibFunctions()
         : init(nullptr)
-        , update(nullptr)
+        , suspend(nullptr)
+        , resume(nullptr)
         , tick(nullptr)
     {
     }
@@ -56,5 +55,5 @@ class Recompiler {
 public:
     Recompiler(const std::string& lib_name);
     ~Recompiler();
-    bool refresh_lib(LibFunctions&);
+    bool refresh_lib(LibFunctions&, RendererState*);
 };

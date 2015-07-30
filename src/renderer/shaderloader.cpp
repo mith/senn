@@ -1,104 +1,68 @@
 #include "shaderloader.hpp"
 
-#include <sys/inotify.h>
-#include <stdexcept>
-#include <unistd.h>
-#include <poll.h>
 #include <string.h>
 #include <iostream>
 
 #include "utils.hpp"
 #include "gl_utils.hpp"
 
+std::ostream& operator<<(std::ostream& stream, const ShaderDescriptor& descriptor)
+{
+    std::cout << "[" << descriptor.vertex << ", " << descriptor.fragment << "]";
+    return stream;
+}
+
 ShaderLoader::ShaderLoader(const std::string& shader_dir)
     : shader_dir(shader_dir)
-    , shaders_up_to_date(ATOMIC_FLAG_INIT)
+    , shader_dir_watcher(shader_dir)
 {
     start();
 }
 
-void ShaderLoader::watch_shader_dir()
+void ShaderLoader::update_shaders()
 {
-    int fd = inotify_init();
-    if (fd < 0) {
-        throw std::runtime_error(std::string("error initializing inotify: ") + strerror(errno));
-    }
-    int wd = inotify_add_watch(fd, shader_dir.c_str(), IN_MODIFY | IN_CREATE | IN_DELETE);
-    if (wd < 0) {
-        throw std::runtime_error(std::string("error setting watch for dir ")
-                                     + shader_dir + std::string(" ") + strerror(errno));
-    }
+    if (shader_dir_watcher.dir_changed()) {
 
-    const size_t event_size = sizeof(inotify_event);
-    const size_t buf_len = 1024 * (event_size + 16);
-
-    pollfd pfd = { fd, POLLIN, 0 };
-    char buf[buf_len];
-
-    while (watcher_should_run) {
-        int ret = poll(&pfd, 1, 500);
-        if (ret < 0) {
-            std::cerr << "shader poll failed: " << strerror(errno) << std::endl;
-        }
-        else if (ret > 0) {
-            int len = read(fd, buf, buf_len);
-            int i = 0;
-            while (len < 0) {
-                inotify_event* event;
-                event = (inotify_event*)&buf[i];
-                shaders_up_to_date.clear();
-                i += event_size + event->len;
+        for (auto& loaded_shader : loaded_shaders) {
+            try { 
+                auto& name = loaded_shader.second.name;
+                name = compile_shader(loaded_shader.first);
+                std::cout << "shader " << loaded_shader.first << " reloaded" << std::endl;
+            } catch (std::runtime_error e) {
+                std::cerr << e.what() << std::endl;
             }
         }
     }
-
-    inotify_rm_watch(fd, wd);
-    close(fd);
 }
 
-
-void ShaderLoader::update_shaders()
-{
-    if (shaders_up_to_date.test_and_set()) {
-        return;
-    }
-
-    for (auto& loaded_shader : loaded_shaders) {
-        auto& name = loaded_shader.second.name;
-        glDeleteProgram(name);
-        name = compile_shader(loaded_shader.first);
-    }
-}
-
-Shader ShaderLoader::load_shader(const ShaderDescriptor& descriptor)
+Shader* ShaderLoader::load_shader(const ShaderDescriptor& descriptor)
 {
     auto it = loaded_shaders.find(descriptor);
     if (it != loaded_shaders.end()) {
-        return it->second;
+        return &it->second;
     }
 
     Shader shader;
     shader.name = compile_shader(descriptor);
-    loaded_shaders.insert(std::make_pair(descriptor, shader));
-    return shader;
+    loaded_shaders.emplace(descriptor, std::move(shader));
+    return &loaded_shaders.find(descriptor)->second;
 }
 
 GLuint ShaderLoader::compile_shader(const ShaderDescriptor& descriptor)
 {
-    auto vertex_shader_src = file_to_str(descriptor.vertex);
-    auto frag_shader_src = file_to_str(descriptor.fragment);
+    auto vertex_shader_src = file_to_str(shader_dir + "/" + descriptor.vertex);
+    auto frag_shader_src = file_to_str(shader_dir + "/" + descriptor.fragment);
 
     return create_program({ create_shader(GL_VERTEX_SHADER, vertex_shader_src),
-        create_shader(GL_FRAGMENT_SHADER, frag_shader_src) });
+            create_shader(GL_FRAGMENT_SHADER, frag_shader_src) });
 }
 
 void ShaderLoader::stop()
 {
-    watcher_should_run = false;
-    watcher_stopped.wait();
+    shader_dir_watcher.stop();
 }
 
 void ShaderLoader::start()
 {
-    watcher_stopped = std::async(std::launch::async, [&]() {watch_shader_dir(); });
+    shader_dir_watcher.start();
 }

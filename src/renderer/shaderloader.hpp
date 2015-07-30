@@ -1,11 +1,9 @@
 #pragma once
 
-#include <thread>
 #include <string>
-#include <atomic>
-#include <future>
 #include <unordered_map>
 
+#include "dirwatcher.hpp"
 #include "primitives.hpp"
 
 struct ShaderDescriptor {
@@ -19,40 +17,56 @@ struct ShaderDescriptor {
 };
 
 namespace std {
-    template<>
-    struct hash<ShaderDescriptor>
+template <>
+struct hash<ShaderDescriptor> {
+    std::size_t operator()(const ShaderDescriptor& descriptor) const
     {
-        std::size_t operator()(const ShaderDescriptor& descriptor) const
-        {
-            using std::hash;
-            using std::string;
-            return hash<string>()(descriptor.vertex)
-                ^ (hash<string>()(descriptor.fragment) << 1) >> 1;
-        }
-    };
+        using std::hash;
+        using std::string;
+        return hash<string>()(descriptor.vertex)
+            ^ (hash<string>()(descriptor.fragment) << 1) >> 1;
+    }
+};
 }
 
 struct Shader {
     GLuint name;
+    Shader()
+        : name(0)
+    {
+    }
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+    Shader(Shader&& o)
+        : name(o.name)
+    {
+        o.name = 0;
+    }
+    Shader& operator=(Shader&& o)
+    {
+        if (name != 0) {
+            glDeleteShader(name);
+        }
+        name = o.name;
+        o.name = 0;
+        return *this;
+    }
 };
 
 class ShaderLoader {
     const std::string shader_dir;
-
-    std::atomic_flag shaders_up_to_date;
-    std::atomic<bool> watcher_should_run;
-    std::future<void> watcher_stopped;
+    DirWatcher shader_dir_watcher;
 
     std::unordered_map<ShaderDescriptor, Shader> loaded_shaders;
 
-    void watch_shader_dir();
     GLuint compile_shader(const ShaderDescriptor&);
 
 public:
     ShaderLoader(const std::string& shader_dir);
+    ~ShaderLoader() { stop(); }
     void update_shaders();
     void stop();
     void start();
 
-    Shader load_shader(const ShaderDescriptor&);
+    Shader* load_shader(const ShaderDescriptor&);
 };

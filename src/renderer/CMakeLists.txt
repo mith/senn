@@ -9,7 +9,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 
 set(renderer_sources renderer.cpp utils.cpp 
     gl_utils.cpp meshloader.cpp 
-    scene.cpp shaderloader.cpp)
+    scene.cpp shaderloader.cpp dirwatcher.cpp
+    sceneloader.cpp primitives.cpp)
 
 add_library(renderer SHARED ${renderer_sources})
 

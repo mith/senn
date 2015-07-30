@@ -8,16 +8,18 @@ uniform vec3 translation;
 uniform vec3 scale;
 uniform mat4 perspMat;
 
+out vec3 f_position;
 out vec3 f_normal;
 out vec2 f_texcoord;
 
 void main()
 {
-    vec4 pos = vec4(position, 1.0f)
+    vec4 pos = vec4(position, 1.0)
              * orientation
-             * vec4(scale, 1.0f) 
-             + vec4(translation, 1.0f);
+             * vec4(scale, 1.0) 
+             + vec4(translation, 1.0);
+    f_position = pos.xyz;
     gl_Position = pos * perspMat;
-    f_normal = (vec4(normal, 1.0f) * orientation).xyz;
+    f_normal = (vec4(normal, 1.0) * orientation).xyz;
     f_texcoord = texcoord;
 }

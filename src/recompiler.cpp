@@ -76,7 +76,7 @@ Recompiler::~Recompiler()
     remove(current_lib.filename);
 }
 
-bool Recompiler::refresh_lib(LibFunctions& fns)
+bool Recompiler::refresh_lib(LibFunctions& fns, RendererState* state)
 {
     if (fns.init == nullptr) {
         fns = current_lib.functions;
@@ -86,6 +86,7 @@ bool Recompiler::refresh_lib(LibFunctions& fns)
         if (status == std::future_status::ready) {
             auto m_lib = new_lib.get();
             if (m_lib) {
+                current_lib.functions.suspend(state);
                 unload(current_lib);
                 current_lib = m_lib.value();
                 fns = current_lib.functions;
@@ -130,7 +131,20 @@ LinkedLib Recompiler::link()
         throw std::runtime_error(std::string(dlerror()));
     }
     *(void**)(&new_lib.functions.init) = dlsym(new_lib.handle, "init");
-    *(void**)(&new_lib.functions.update) = dlsym(new_lib.handle, "update");
+    if (new_lib.functions.init == nullptr) {
+        throw std::runtime_error(std::string(dlerror()));
+    }
+    *(void**)(&new_lib.functions.suspend) = dlsym(new_lib.handle, "suspend");
+    if (new_lib.functions.suspend == nullptr) {
+        throw std::runtime_error(std::string(dlerror()));
+    }
+    *(void**)(&new_lib.functions.resume) = dlsym(new_lib.handle, "resume");
+    if (new_lib.functions.resume == nullptr) {
+        throw std::runtime_error(std::string(dlerror()));
+    }
     *(void**)(&new_lib.functions.tick) = dlsym(new_lib.handle, "tick");
+    if (new_lib.functions.tick == nullptr) {
+        throw std::runtime_error(std::string(dlerror()));
+    }
     return new_lib;
 }

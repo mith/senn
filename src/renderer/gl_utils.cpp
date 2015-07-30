@@ -61,7 +61,7 @@ GLuint create_program(const std::vector<GLuint>& shader_list)
         GLint infoLogLength;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        auto strInfoLog = new GLchar[infoLogLength + 1];
+        auto  strInfoLog = new GLchar[infoLogLength + 1];
         glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
         fprintf(stderr, "Linker failure: %s\n", strInfoLog);
         delete[] strInfoLog;

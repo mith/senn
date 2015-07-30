@@ -93,6 +93,7 @@ GLFWwindow* init_gl()
         throw std::runtime_error("failure loading opengl functions");
     }
 
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(gl_error, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE,
         0, nullptr, GL_TRUE);
@@ -116,7 +117,7 @@ int main()
     auto window = init_gl();
     Recompiler rc("renderer");
     LibFunctions lib_fun;
-    rc.refresh_lib(lib_fun);
+    rc.refresh_lib(lib_fun, nullptr);
     auto rs = lib_fun.init(window);
     ImGui_ImplGlfwGL3_Init(rs->window, true);
     glfwSetKeyCallback(rs->window, key_callback);
@@ -125,8 +126,8 @@ int main()
     while (!glfwWindowShouldClose(rs->window)) {
         ImGui_ImplGlfwGL3_NewFrame();
         glfwPollEvents();
-        if (rc.refresh_lib(lib_fun)) {
-            lib_fun.update(rs);
+        if (rc.refresh_lib(lib_fun,rs)) {
+            lib_fun.resume(rs);
         }
         lib_fun.tick(rs);
         ImGui::Render();
