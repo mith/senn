@@ -78,17 +78,14 @@ Mesh MeshLoader::load_mesh_from_file(const std::string& filename)
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, ("creating buffers for mesh: " + filename).c_str());
 
-    glCreateBuffers(1, &mesh.vertex_buffer.name);
     glObjectLabel(GL_BUFFER, mesh.vertex_buffer.name, -1, "vertice buffer");
     glNamedBufferStorage(mesh.vertex_buffer.name, sizeof(Vertex) * ih->num_vertexes,
         positions, 0);
 
-    glCreateBuffers(1, &mesh.attribute_buffer.name);
     glObjectLabel(GL_BUFFER, mesh.attribute_buffer.name, -1, "attributes buffer");
     glNamedBufferStorage(mesh.attribute_buffer.name, sizeof(VertexAttribes) * attributes.size(),
         attributes.data(), 0);
 
-    glCreateBuffers(1, &mesh.indice_buffer.name);
     glObjectLabel(GL_BUFFER, mesh.indice_buffer.name, -1, "indice buffer");
     glNamedBufferStorage(mesh.indice_buffer.name, sizeof(unsigned int) * ih->num_triangles * 3,
         indices, 0);

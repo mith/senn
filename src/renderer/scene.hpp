@@ -9,15 +9,25 @@
 #include <glm/glm.hpp>
 
 #include "primitives.hpp"
+#include "backend.hpp"
 #include "shaderloader.hpp"
 #include "meshloader.hpp"
 
+struct Material {
+    Texture<TextureType::T2D> diffuse;
+    float fresnel0;
+    float roughness;
+};
+
 class Scene {
 public:
-    Shader* shader;
+    Texture<TextureType::T2D> shadowmap_depth_tex;
+    Framebuffer shadowmap;
+    Shader* shadowmap_shader;
 
+    Shader* shader;
     std::vector<Mesh*> meshes;
-    std::vector<Texture*> mesh_textures;
+    std::vector<Texture<TextureType::T2D>*> mesh_textures;
     std::vector<ObjectAttribes> objects_attributes;
     std::unordered_map<std::string, Material> materials;
 
@@ -29,4 +39,5 @@ public:
     Scene& operator=(Scene&&) = default;
 
     void render();
+    void render_shadowmap();
 };

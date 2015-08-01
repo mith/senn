@@ -72,6 +72,8 @@ flags = [
 '.',
 '-I',
 './ClangCompleter',
+'-I',
+'/usr/include',
 '-isystem',
 './tests/gmock/gtest',
 '-isystem',

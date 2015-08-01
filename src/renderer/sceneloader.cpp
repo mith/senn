@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/io.hpp>
+#include <GL/glew.h>
 #define KTX_OPENGL 1
 #include <ktx.h>
 
@@ -78,6 +79,18 @@ Scene SceneLoader::load_from_file(const std::string& filename)
     }
 
     scene.shader = shader_loader->load_shader(ShaderDescriptor{"simple.vert", "simple.frag"});
+    glTextureStorage2D(scene.shadowmap_depth_tex.name,
+            1, GL_DEPTH_COMPONENT16, 512, 512);
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+
+    scene.shadowmap.set_depth_attachment(scene.shadowmap_depth_tex);
+    scene.shadowmap_shader = shader_loader->load_shader(ShaderDescriptor{"shadowmap.vert",
+            "shadowmap.frag"});
     glPopDebugGroup();
 
     return scene;
@@ -95,34 +108,34 @@ void SceneLoader::start()
 }
 
 namespace YAML {
-template <>
-struct convert<glm::vec3> {
-    static bool decode(const Node& node, glm::vec3& v)
-    {
-        if (node.size() != 3) {
-            return false;
-        }
+    template <>
+        struct convert<glm::vec3> {
+            static bool decode(const Node& node, glm::vec3& v)
+            {
+                if (node.size() != 3) {
+                    return false;
+                }
 
-        v.x = node[0].as<float>();
-        v.y = node[1].as<float>();
-        v.z = node[2].as<float>();
-        return true;
-    }
-};
+                v.x = node[0].as<float>();
+                v.y = node[1].as<float>();
+                v.z = node[2].as<float>();
+                return true;
+            }
+        };
 
-template <>
-struct convert<glm::quat> {
-    static bool decode(const Node& node, glm::quat& q)
-    {
-        if (node.size() != 4) {
-            return false;
-        }
+    template <>
+        struct convert<glm::quat> {
+            static bool decode(const Node& node, glm::quat& q)
+            {
+                if (node.size() != 4) {
+                    return false;
+                }
 
-        q.x = node[0].as<float>();
-        q.y = node[1].as<float>();
-        q.z = node[2].as<float>();
-        q.w = node[3].as<float>();
-        return true;
-    }
-};
+                q.x = node[0].as<float>();
+                q.y = node[1].as<float>();
+                q.z = node[2].as<float>();
+                q.w = node[3].as<float>();
+                return true;
+            }
+        };
 }

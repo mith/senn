@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project (renderer)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wformat=2") 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
-endif()
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto") 
-
 set(renderer_sources renderer.cpp utils.cpp 
     gl_utils.cpp meshloader.cpp 
     scene.cpp shaderloader.cpp dirwatcher.cpp
@@ -26,8 +20,9 @@ include_directories(${GLFW_INCLUDE_DIR}
 target_link_libraries(renderer ${GLFW_LIBRARIES} 
                                ${GLBINDING_LIBRARIES} 
                                ${Boost_LIBRARIES}
-                               ${GLEW_LIBRARIES}
                                ${YAML_LIBRARIES}
+                               ${GLEW_LIBRARIES}
                                lodepng
                                ktx
+                               -lGL
                                imgui)

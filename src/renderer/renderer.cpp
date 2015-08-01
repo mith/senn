@@ -10,6 +10,8 @@
 #include "utils.hpp"
 #include "scene.hpp"
 
+#include <GL/glew.h>
+
 RendererState* init(GLFWwindow* window)
 {
     auto  state = new RendererState();
@@ -48,4 +50,11 @@ void tick(RendererState* state)
     ImGuiIO& imgio = ImGui::GetIO();
     ImGui::Value("FPS", imgio.Framerate);
     ImGui::Value("Frametime(ms)", imgio.DeltaTime * 1000);
+
+    ImGui::Begin("Positions");
+    for (auto & obj : state->loaded_scene->objects_attributes) {
+        ImGui::Value("x", obj.position.x);
+        ImGui::Value("z", obj.position.z);
+    }
+    ImGui::End();
 }

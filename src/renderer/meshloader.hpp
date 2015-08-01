@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "dirwatcher.hpp"
+#include "backend.hpp"
 #include "primitives.hpp"
 
 struct Mesh {
@@ -16,13 +17,7 @@ struct Mesh {
     VertexArray vao;
     DrawCommand draw_command;
 
-    Mesh()
-        : vertex_buffer()
-        , attribute_buffer()
-        , indice_buffer()
-        , vao()
-        , draw_command()
-    {}
+    Mesh() = default;
     Mesh(const Mesh&) = delete;
     Mesh& operator=(const Mesh&) = delete;
     Mesh(Mesh&& o) = default;

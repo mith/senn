@@ -5,7 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wformat=2")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 endif()
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto") 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}") 
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
@@ -27,6 +27,7 @@ include_directories("./include"
 
 add_subdirectory("third_party/imgui" "imgui")
 add_subdirectory("third_party/lodepng" "lodepng")
+add_subdirectory("third_party/glad" "glad_loader")
 include_directories(${IMGUI_INCLUDE_DIR})
 
 add_subdirectory("src/renderer" "renderer")
