@@ -1,15 +1,12 @@
 #include <iostream>
-#include <chrono>
 #include <thread>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "libreloader.hpp"
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw_gl3.hpp>
-
-#include "recompiler.hpp"
-#include "renderer/renderer.hpp"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 void glfw_error(int error, const char* description)
 {
@@ -89,9 +86,24 @@ GLFWwindow* init_gl()
     }
 
     glfwMakeContextCurrent(window);
-    if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("failure loading opengl functions");
+    auto glew_err = glewInit();
+    if (glew_err != GLEW_OK) {
+        throw std::runtime_error((const char*)glewGetErrorString(glew_err));
     }
+
+    glfwMakeContextCurrent(window);
+
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+    return window;
+}
+
+void set_callbacks(GLFWwindow* window) 
+{
+    glfwSetErrorCallback(glfw_error);
+
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowSizeCallback(window, window_resize_callback);
 
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(gl_error, nullptr);
@@ -106,32 +118,24 @@ GLFWwindow* init_gl()
         GL_DONT_CARE, 
         0, nullptr, GL_FALSE);
     glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 1,
-        GL_DEBUG_SEVERITY_NOTIFICATION, -1, "gl callback test\n\0");
-
-    glfwSwapInterval(1);
-    return window;
+        GL_DEBUG_SEVERITY_NOTIFICATION, -1, "gl callback test");
 }
+
 
 int main()
 {
-    auto window = init_gl();
-    Recompiler rc("renderer");
+    LibReloader rc("../src/renderer", "renderer", "./renderer", "ninja");
     LibFunctions lib_fun;
+    auto window = init_gl();
+    set_callbacks(window);
+    window_resize_callback(window, 512, 512);
     rc.refresh_lib(lib_fun, nullptr);
     auto rs = lib_fun.init(window);
-    ImGui_ImplGlfwGL3_Init(rs->window, true);
-    glfwSetKeyCallback(rs->window, key_callback);
-    glfwSetWindowSizeCallback(rs->window, window_resize_callback);
-    window_resize_callback(rs->window, 512, 512);
-    while (!glfwWindowShouldClose(rs->window)) {
-        ImGui_ImplGlfwGL3_NewFrame();
-        glfwPollEvents();
+    while (true) {
         if (rc.refresh_lib(lib_fun,rs)) {
             lib_fun.resume(rs);
         }
         lib_fun.tick(rs);
-        ImGui::Render();
-        glfwSwapBuffers(rs->window);
     }
     std::cout << "fin" << std::endl;
 }

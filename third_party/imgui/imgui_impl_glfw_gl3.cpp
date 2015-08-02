@@ -4,7 +4,8 @@
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.hpp"
 
-#include <GL/glew.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glcorearb.h>
 #include <GLFW/glfw3.h>
 
 #ifdef _MSC_VER
@@ -15,14 +16,14 @@
 #endif
 
 // Data
-static GLFWwindow*  g_Window = NULL;
-static double       g_Time = 0.0f;
-static bool         g_MousePressed[3] = { false, false, false };
-static float        g_MouseWheel = 0.0f;
-static GLuint       g_FontTexture = 0;
-static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
-static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
+static GLFWwindow* g_Window = NULL;
+static double g_Time = 0.0f;
+static bool g_MousePressed[3] = { false, false, false };
+static float g_MouseWheel = 0.0f;
+static GLuint g_FontTexture = 0;
+static int g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
+static int g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
+static int g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
@@ -45,20 +46,18 @@ static void ImGui_ImplGlfwGL3_RenderDrawLists(ImDrawData* draw_data)
     // Setup orthographic projection matrix
     const float width = ImGui::GetIO().DisplaySize.x;
     const float height = ImGui::GetIO().DisplaySize.y;
-    const float ortho_projection[4][4] =
-    {
-        { 2.0f/width,	0.0f,			0.0f,		0.0f },
-        { 0.0f,			2.0f/-height,	0.0f,		0.0f },
-        { 0.0f,			0.0f,			-1.0f,		0.0f },
-        { -1.0f,		1.0f,			0.0f,		1.0f },
+    const float ortho_projection[4][4] = {
+        { 2.0f / width, 0.0f, 0.0f, 0.0f },
+        { 0.0f, 2.0f / -height, 0.0f, 0.0f },
+        { 0.0f, 0.0f, -1.0f, 0.0f },
+        { -1.0f, 1.0f, 0.0f, 1.0f },
     };
     glUseProgram(g_ShaderHandle);
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
     glBindVertexArray(g_VaoHandle);
 
-    for (int n = 0; n < draw_data->CmdListsCount; n++)
-    {
+    for (int n = 0; n < draw_data->CmdListsCount; n++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[n];
         const ImDrawIdx* idx_buffer_offset = 0;
 
@@ -68,14 +67,11 @@ static void ImGui_ImplGlfwGL3_RenderDrawLists(ImDrawData* draw_data)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);
 
-        for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
-        {
-            if (pcmd->UserCallback)
-            {
+        for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++) {
+            if (pcmd->UserCallback) {
                 pcmd->UserCallback(cmd_list, pcmd);
             }
-            else
-            {
+            else {
                 glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
                 glScissor((int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
                 glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
@@ -141,7 +137,7 @@ void ImGui_ImplGlfwGL3_CreateFontsTexture()
 
     unsigned char* pixels;
     int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height); // Load as RGBA 32-bits for OpenGL3 demo because it is more likely to be compatible with user's existing shader.
 
     glGenTextures(1, &g_FontTexture);
     glBindTexture(GL_TEXTURE_2D, g_FontTexture);
@@ -150,7 +146,7 @@ void ImGui_ImplGlfwGL3_CreateFontsTexture()
     glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+    io.Fonts->TexID = (void*)(intptr_t)g_FontTexture;
 
     // Cleanup (don't clear the input data if you want to append new fonts later)
     io.Fonts->ClearInputData();
@@ -159,31 +155,29 @@ void ImGui_ImplGlfwGL3_CreateFontsTexture()
 
 bool ImGui_ImplGlfwGL3_CreateDeviceObjects()
 {
-    const GLchar *vertex_shader =
-        "#version 330\n"
-        "uniform mat4 ProjMtx;\n"
-        "in vec2 Position;\n"
-        "in vec2 UV;\n"
-        "in vec4 Color;\n"
-        "out vec2 Frag_UV;\n"
-        "out vec4 Frag_Color;\n"
-        "void main()\n"
-        "{\n"
-        "	Frag_UV = UV;\n"
-        "	Frag_Color = Color;\n"
-        "	gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-        "}\n";
+    const GLchar* vertex_shader = "#version 330\n"
+                                  "uniform mat4 ProjMtx;\n"
+                                  "in vec2 Position;\n"
+                                  "in vec2 UV;\n"
+                                  "in vec4 Color;\n"
+                                  "out vec2 Frag_UV;\n"
+                                  "out vec4 Frag_Color;\n"
+                                  "void main()\n"
+                                  "{\n"
+                                  "	Frag_UV = UV;\n"
+                                  "	Frag_Color = Color;\n"
+                                  "	gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
+                                  "}\n";
 
-    const GLchar* fragment_shader =
-        "#version 330\n"
-        "uniform sampler2D Texture;\n"
-        "in vec2 Frag_UV;\n"
-        "in vec4 Frag_Color;\n"
-        "out vec4 Out_Color;\n"
-        "void main()\n"
-        "{\n"
-        "	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
-        "}\n";
+    const GLchar* fragment_shader = "#version 330\n"
+                                    "uniform sampler2D Texture;\n"
+                                    "in vec2 Frag_UV;\n"
+                                    "in vec4 Frag_Color;\n"
+                                    "out vec4 Out_Color;\n"
+                                    "void main()\n"
+                                    "{\n"
+                                    "	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
+                                    "}\n";
 
     g_ShaderHandle = glCreateProgram();
     g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
@@ -212,7 +206,7 @@ bool ImGui_ImplGlfwGL3_CreateDeviceObjects()
     glEnableVertexAttribArray(g_AttribLocationUV);
     glEnableVertexAttribArray(g_AttribLocationColor);
 
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+#define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE*)0)->ELEMENT))
     glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
     glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
     glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
@@ -225,12 +219,12 @@ bool ImGui_ImplGlfwGL3_CreateDeviceObjects()
     return true;
 }
 
-bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
+bool ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
 {
     g_Window = window;
 
     ImGuiIO& io = ImGui::GetIO();
-    io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;                 // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+    io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB; // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
     io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
     io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
@@ -257,8 +251,7 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
     io.ImeWindowHandle = glfwGetWin32Window(g_Window);
 #endif
 
-    if (install_callbacks)
-    {
+    if (install_callbacks) {
         glfwSetMouseButtonCallback(window, ImGui_ImplGlfwGL3_MouseButtonCallback);
         glfwSetScrollCallback(window, ImGui_ImplGlfwGL3_ScrollCallback);
         glfwSetKeyCallback(window, ImGui_ImplGlfwGL3_KeyCallback);
@@ -270,9 +263,12 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
 
 void ImGui_ImplGlfwGL3_Shutdown()
 {
-    if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
-    if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
-    if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
+    if (g_VaoHandle)
+        glDeleteVertexArrays(1, &g_VaoHandle);
+    if (g_VboHandle)
+        glDeleteBuffers(1, &g_VboHandle);
+    if (g_ElementsHandle)
+        glDeleteBuffers(1, &g_ElementsHandle);
     g_VaoHandle = g_VboHandle = g_ElementsHandle = 0;
 
     glDetachShader(g_ShaderHandle, g_VertHandle);
@@ -286,8 +282,7 @@ void ImGui_ImplGlfwGL3_Shutdown()
     glDeleteProgram(g_ShaderHandle);
     g_ShaderHandle = 0;
 
-    if (g_FontTexture)
-    {
+    if (g_FontTexture) {
         glDeleteTextures(1, &g_FontTexture);
         ImGui::GetIO().Fonts->TexID = 0;
         g_FontTexture = 0;
@@ -310,28 +305,25 @@ void ImGui_ImplGlfwGL3_NewFrame()
     io.DisplaySize = ImVec2((float)display_w, (float)display_h);
 
     // Setup time step
-    double current_time =  glfwGetTime();
-    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
+    double current_time = glfwGetTime();
+    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
     g_Time = current_time;
 
     // Setup inputs
     // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-    if (glfwGetWindowAttrib(g_Window, GLFW_FOCUSED))
-    {
-    	double mouse_x, mouse_y;
-    	glfwGetCursorPos(g_Window, &mouse_x, &mouse_y);
-    	mouse_x *= (float)display_w / w;                        // Convert mouse coordinates to pixels
-    	mouse_y *= (float)display_h / h;
-    	io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
+    if (glfwGetWindowAttrib(g_Window, GLFW_FOCUSED)) {
+        double mouse_x, mouse_y;
+        glfwGetCursorPos(g_Window, &mouse_x, &mouse_y);
+        mouse_x *= (float)display_w / w; // Convert mouse coordinates to pixels
+        mouse_y *= (float)display_h / h;
+        io.MousePos = ImVec2((float)mouse_x, (float)mouse_y); // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
     }
-    else
-    {
-    	io.MousePos = ImVec2(-1,-1);
+    else {
+        io.MousePos = ImVec2(-1, -1);
     }
 
-    for (int i = 0; i < 3; i++)
-    {
-        io.MouseDown[i] = g_MousePressed[i] || glfwGetMouseButton(g_Window, i) != 0;    // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    for (int i = 0; i < 3; i++) {
+        io.MouseDown[i] = g_MousePressed[i] || glfwGetMouseButton(g_Window, i) != 0; // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
         g_MousePressed[i] = false;
     }
 

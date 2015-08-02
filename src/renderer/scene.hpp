@@ -25,13 +25,16 @@ public:
     Framebuffer shadowmap;
     Shader* shadowmap_shader;
 
+    glm::mat4 shadow_mat;    
+    glm::vec3 light_direction;
+
     Shader* shader;
     std::vector<Mesh*> meshes;
     std::vector<Texture<TextureType::T2D>*> mesh_textures;
     std::vector<ObjectAttribes> objects_attributes;
     std::unordered_map<std::string, Material> materials;
 
-    Scene() {}
+    Scene();
     ~Scene();
 
     Scene(const Scene&) = delete;

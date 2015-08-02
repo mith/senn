@@ -91,6 +91,7 @@ Scene SceneLoader::load_from_file(const std::string& filename)
     scene.shadowmap.set_depth_attachment(scene.shadowmap_depth_tex);
     scene.shadowmap_shader = shader_loader->load_shader(ShaderDescriptor{"shadowmap.vert",
             "shadowmap.frag"});
+    glNamedFramebufferDrawBuffer(scene.shadowmap.get_name(), GL_NONE);
     glPopDebugGroup();
 
     return scene;

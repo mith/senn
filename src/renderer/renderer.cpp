@@ -10,13 +10,12 @@
 #include "utils.hpp"
 #include "scene.hpp"
 
-#include <GL/glew.h>
-
 RendererState* init(GLFWwindow* window)
 {
-    auto  state = new RendererState();
+    auto state = new RendererState();
     state->window = window;
     state->loaded_scene = state->scene_loader->load_scene("cornell");
+    ImGui_ImplGlfwGL3_Init(state->window, false);
     return state;
 }
 
@@ -41,10 +40,8 @@ void tick(RendererState* state)
     state->shader_loader->update_shaders();
     state->scene_loader->update_scenes();
     state->mesh_loader->update_meshes();
-
-    glDisable(GL_DEPTH_TEST);
-    glClearColor(0.4f, 0.4f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glfwPollEvents();
+    ImGui_ImplGlfwGL3_NewFrame();
     state->loaded_scene->render();
 
     ImGuiIO& imgio = ImGui::GetIO();
@@ -57,4 +54,6 @@ void tick(RendererState* state)
         ImGui::Value("z", obj.position.z);
     }
     ImGui::End();
+    ImGui::Render();
+    glfwSwapBuffers(state->window);
 }

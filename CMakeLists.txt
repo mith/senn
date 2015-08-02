@@ -11,7 +11,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
-find_package(glbinding REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Boost REQUIRED COMPONENTS iostreams)
 pkg_search_module(YAML REQUIRED yaml-cpp)
@@ -20,33 +19,28 @@ find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 
 include_directories("./include" 
-                    ${GLBINDING_INCLUDE_DIR}
                     ${GLFW_INCLUDE_DIR}
                     ${YAML_INCLUDE_DIR}
                     "./third_party")
 
 add_subdirectory("third_party/imgui" "imgui")
 add_subdirectory("third_party/lodepng" "lodepng")
-add_subdirectory("third_party/glad" "glad_loader")
 include_directories(${IMGUI_INCLUDE_DIR})
 
 add_subdirectory("src/renderer" "renderer")
 add_subdirectory("textures" "textures")
 
-set(senn_sources src/main.cpp src/recompiler.cpp)
+set(senn_sources src/main.cpp src/libreloader.cpp)
 add_executable(senn ${senn_sources})
 
 set_property(TARGET senn PROPERTY CXX_STANDARD 14)
 set_property(TARGET senn PROPERTY CXX_STANDARD_REQUIRED 14)
 
-target_link_libraries(senn dl 
-                           pthread 
-                           ${GLFW_LIBRARIES}
-                           ${YAML_LIBRARIES}
-                           ${GLBINDING_LIBRARIES}
-                           ${OPENGL_LIBRARIES}
-                           ${GLEW_LIBRARIES}
-                           imgui)
+target_link_libraries(senn dl pthread 
+    ${GLFW_LIBRARIES} 
+    ${GLEW_LIBRARIES} 
+    ${OPENGL_LIBRARIES}
+    imgui)
 
 file(GLOB_RECURSE src_files src/*)
 
