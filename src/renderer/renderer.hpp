@@ -27,5 +27,6 @@ extern "C" {
 RendererState* init(GLFWwindow*);
 void suspend(RendererState*);
 void resume(RendererState*);
-void tick(RendererState*);
+bool tick(RendererState*);
+void finish(RendererState*);
 }

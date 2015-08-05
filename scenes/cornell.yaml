@@ -1,19 +1,19 @@
 objects: 
-#    - mesh: "halo"
-#      position: [0.0, 0.0, 0.0]
-#      scale: [1.0, 1.0, 10.0]
-#      orientation: [0.0, 0.0, 0.0, 0.0]
-#      material: "halo"
     - mesh: "cornell"
       position: [0.0, 0.0, -20.0]
       orientation: [0.0, -0.7071045443232221, 0.0, 0.7071090180427968]
-      scale: [25.0, 25.0, 25.0]
+      scale: [1.0, 1.0, 1.0]
       material: "cornell"
     - mesh: "sphere"
       position: [0.0, 0.0, -20.0]
       orientation: [0.0, 0.0, 0.0, 0.0]
-      scale: [9.0, 9.0, 9.0]
+      scale: [1.0, 1.0, 1.0]
       material: "sphere"
+    - mesh: "halo"
+      position: [0.0, 0.0, 0.0]
+      scale: [1.0, 1.0, 1.0]
+      orientation: [-0.7, 0.0, 0.0, 0.7]
+      material: "halo"
 
 lights:
     - color: [3.0, 3.0, 3.0]

@@ -15,7 +15,7 @@ uniform vec3 directional_light;
 
 vec3 lambert(vec3 color, vec3 normal, vec3 light_direction)
 {
-    return dot(normal, light_direction) * color;
+    return clamp(dot(normal, light_direction), 0.0, 1.0) * color;
 }
 
 vec3 blinn(vec3 color, vec3 normal, vec3 light_direction)

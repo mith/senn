@@ -79,19 +79,9 @@ Scene SceneLoader::load_from_file(const std::string& filename)
     }
 
     scene.shader = shader_loader->load_shader(ShaderDescriptor{"simple.vert", "simple.frag"});
-    glTextureStorage2D(scene.shadowmap_depth_tex.name,
-            1, GL_DEPTH_COMPONENT16, 512, 512);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-
-    scene.shadowmap.set_depth_attachment(scene.shadowmap_depth_tex);
-    scene.shadowmap_shader = shader_loader->load_shader(ShaderDescriptor{"shadowmap.vert",
-            "shadowmap.frag"});
-    glNamedFramebufferDrawBuffer(scene.shadowmap.get_name(), GL_NONE);
+    scene.directional_lights.emplace_back(shader_loader, glm::normalize(glm::vec3(1.0f, 1.0f, 0.5f)));
+    scene.camera.size = {800, 600};
+    scene.camera.fovy = 50.0f;
     glPopDebugGroup();
 
     return scene;

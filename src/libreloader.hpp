@@ -16,12 +16,14 @@ struct LibFunctions {
     LibState* (*init)(GLFWwindow*);
     void (*suspend)(LibState*);
     void (*resume)(LibState*);
-    void (*tick)(LibState*);
+    bool (*tick)(LibState*);
+    void (*finish)(LibState*);
     LibFunctions()
         : init(nullptr)
         , suspend(nullptr)
         , resume(nullptr)
         , tick(nullptr)
+        , finish(nullptr)
     {
     }
 };

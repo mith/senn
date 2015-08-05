@@ -154,5 +154,9 @@ LinkedLib LibReloader::link(const std::string& lib_filename)
     if (new_lib.functions.tick == nullptr) {
         throw std::runtime_error(std::string(dlerror()));
     }
+    *(void**)(&new_lib.functions.finish) = dlsym(new_lib.handle, "finish");
+    if (new_lib.functions.finish == nullptr) {
+        throw std::runtime_error(std::string(dlerror()));
+    }
     return new_lib;
 }
