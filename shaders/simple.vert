@@ -18,7 +18,7 @@ void main()
     vec4 pos = modelMat * vec4(position, 1.0);
     f_position = pos.xyz;
     shadow_position = shadowMat * pos;
-    gl_Position = perspMat * pos;
+    gl_Position = shadowMat * pos;
     f_normal = (rotMat * vec4(normal, 1.0)).xyz;
     f_texcoord = texcoord;
 }

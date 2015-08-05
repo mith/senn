@@ -17,7 +17,15 @@ glm::mat4 Camera::get_view_matrix()
 
 glm::mat4 Camera::get_projection_matrix()
 {
-    return glm::infinitePerspective(fovy, (float)size.x/size.y, 0.5f);
+    //return glm::infinitePerspective(fovy, (float)size.x/size.y, 0.5f);
+    const float zNear = 1.0f;
+    const float viewAngleVertical = 50.0f;
+    const float f = 1.0f / std::tan(viewAngleVertical / 2.0f);
+    float aspect = (float)size.x/(float)size.y;
+    return { f/aspect, 0.0f, 0.0f, 0.0f,
+                 0.0f,    f, 0.0f, 0.0f,
+                 0.0f, 0.0f, 0.0f, -1.0f,
+                 0.0f, 0.0f, zNear, 0.0f };
 }
 
 void Camera::add_pitch(float n)

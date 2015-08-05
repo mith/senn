@@ -32,7 +32,6 @@ void window_resize_callback(GLFWwindow*, int width, int height)
 void init_imgui(GLFWwindow* window)
 {
     ImGui_ImplGlfwGL3_Init(window, true);
-
     auto& igs = ImGui::GetStyle();
     igs.WindowRounding = 2.0f;
     igs.FrameRounding = 2.0f;
@@ -67,6 +66,7 @@ void suspend(RendererState* state)
     state->shader_loader->stop();
     state->mesh_loader->stop();
     state->scene_loader->stop();
+    ImGui_ImplGlfwGL3_Shutdown();
 }
 
 void resume(RendererState* state)
@@ -75,6 +75,7 @@ void resume(RendererState* state)
     state->shader_loader->start();
     state->mesh_loader->start();
     state->scene_loader->start();
+    init_imgui(state->window);
     set_callbacks(state->window);
 }
 

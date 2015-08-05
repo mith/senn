@@ -8,7 +8,7 @@
 Shadowmap::Shadowmap(ShaderLoader* shader_loader, glm::ivec2 size, glm::vec3 direction)
     : size(size)
 { 
-    proj_matrix = glm::ortho(-55.0f, 55.0f, -55.0f, 55.0f, -100.0f, 100.0f);
+    proj_matrix = glm::ortho(-2.0f, 25.0f, -2.0f, 20.0f, -100.0f, 100.0f);
     set_direction(direction);
     glTextureStorage2D(depth_texture.name, 1, GL_DEPTH_COMPONENT16, size.x, size.y);
     glTextureParameteri(depth_texture.name, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

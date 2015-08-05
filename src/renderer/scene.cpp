@@ -31,6 +31,8 @@ void Scene::render_shadowmap()
     for (auto & light : directional_lights) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, light.shadowmap.framebuffer.get_name());
      
+        glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
+        glDepthFunc(GL_LESS);
         glClearDepth(1.0f);
         glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -50,16 +52,12 @@ void Scene::render_shadowmap()
 
         for (int d = 0; d < (int)meshes.size(); d++) {
             auto& mesh = meshes[d];
-            auto& obj_atr = objects_attributes[d];
 
             glBindVertexArray(mesh->vao.name);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->indice_buffer.name);
 
-            auto rotation_matrix = glm::mat4_cast(obj_atr.orientation);
-            
-            glm::mat4 model_mat = glm::translate(obj_atr.position)
-                                * rotation_matrix
-                                * glm::scale(obj_atr.scale);
+            auto model_mat = model_matrix(objects_attributes[d]);
+
             glUniformMatrix4fv(model_mat_attrib, 1, GL_FALSE, glm::value_ptr(model_mat));
 
             glDrawElementsBaseVertex(GL_TRIANGLES, mesh->draw_command.index_count * 3,
@@ -77,9 +75,9 @@ void Scene::render_shadowmap()
 void Scene::update(GLFWwindow* window)
 {
     float x = std::fmod(glfwGetTime(), 2 * M_PI) - M_PI;
-    objects_attributes[1].position.z = std::sin(x) * 15.0f;
-    objects_attributes[1].position.y = std::sin(x) * 10.0f;
-    objects_attributes[1].position.x = std::cos(x) * 15.0f;
+    objects_attributes[1].position.z = std::sin(x) * 03.0f;
+    objects_attributes[1].position.y = std::sin(x) * 03.0f;
+    objects_attributes[1].position.x = std::cos(x) * 03.0f;
 
 
     if (glfwGetWindowAttrib(window, GLFW_FOCUSED)) {
@@ -131,17 +129,18 @@ void Scene::render()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);
-    glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
-    glDepthRangedNV(-1.0f, 1.0f);
 
     render_shadowmap();
 
     glViewport(0, 0, camera.size.x, camera.size.y);
     glCullFace(GL_BACK);
 
-    glClearDepth(1.0f);
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+    glDepthFunc(GL_GREATER);
+    glClearDepth(0.0f);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    //glDepthRangedNV(-1.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shader->name);
@@ -181,9 +180,7 @@ void Scene::render()
 
         auto rotation_matrix = glm::mat4_cast(obj_atr.orientation);
         
-        glm::mat4 model_mat = glm::translate(obj_atr.position)
-                            * rotation_matrix
-                            * glm::scale(obj_atr.scale);
+        glm::mat4 model_mat = model_matrix(obj_atr);
         glUniformMatrix4fv(model_mat_attrib, 1, GL_FALSE, glm::value_ptr(model_mat));
         glUniformMatrix4fv(rot_mat_attrib, 1, GL_FALSE, glm::value_ptr(rotation_matrix));
 

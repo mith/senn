@@ -30,6 +30,8 @@ struct ObjectAttribes {
     glm::vec3 scale;
 };
 
+glm::mat4 model_matrix(const ObjectAttribes& object_attributes);
+
 struct DrawCommand {
     GLint index_count;
     GLint base_vertex;

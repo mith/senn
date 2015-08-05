@@ -1,13 +1,13 @@
 objects: 
     - mesh: "cornell"
-      position: [0.0, 0.0, -20.0]
+      position: [0.0, 0.0, 0.0]
       orientation: [0.0, -0.7071045443232221, 0.0, 0.7071090180427968]
       scale: [1.0, 1.0, 1.0]
       material: "cornell"
     - mesh: "sphere"
       position: [0.0, 0.0, -20.0]
       orientation: [0.0, 0.0, 0.0, 0.0]
-      scale: [1.0, 1.0, 1.0]
+      scale: [0.4, 0.4, 0.4]
       material: "sphere"
     - mesh: "halo"
       position: [0.0, 0.0, 0.0]
