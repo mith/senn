@@ -2,39 +2,8 @@
 
 #include <experimental/optional>
 
-
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-
-template <typename T>
-struct Buffer {
-    GLuint name;
-    Buffer()
-    {
-        glCreateBuffers(1, &name);
-    }
-    ~Buffer()
-    {
-        if (name != 0) {
-            glDeleteBuffers(1, &name);
-        }
-    }
-
-    Buffer(const Buffer&) = delete;
-    Buffer& operator=(const Buffer&) = delete;
-    Buffer(Buffer&& o)
-        : name(o.name)
-    {
-        o.name = 0;
-    }
-    Buffer& operator=(Buffer&& o)
-    {
-        this->~Buffer();
-        name = o.name;
-        o.name = 0;
-        return *this;
-    }
-};
 
 struct VertexArray {
     GLuint name;
@@ -67,10 +36,10 @@ struct VertexArray {
 };
 
 enum class TextureType {
-   T2D = GL_TEXTURE_2D 
+    T2D = GL_TEXTURE_2D
 };
 
-template<TextureType Type>
+template <TextureType Type>
 struct Texture {
     GLuint name;
     Texture()
@@ -102,6 +71,7 @@ struct Texture {
 class Framebuffer {
     GLuint name;
     Texture<TextureType::T2D> depth_attachment;
+
 public:
     Framebuffer()
     {

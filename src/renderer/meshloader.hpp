@@ -9,11 +9,12 @@
 #include "dirwatcher.hpp"
 #include "backend.hpp"
 #include "primitives.hpp"
+#include "buffer.hpp"
 
 struct Mesh {
-    Buffer<Vertex> vertex_buffer;
-    Buffer<VertexAttribes> attribute_buffer;
-    Buffer<unsigned int> indice_buffer;
+    VertexBuffer<Vertex> vertex_buffer;
+    VertexBuffer<VertexAttribes> attribute_buffer;
+    IndexBuffer<unsigned int> indice_buffer;
     VertexArray vao;
     DrawCommand draw_command;
 

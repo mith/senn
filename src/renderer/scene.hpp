@@ -23,7 +23,6 @@ struct Material {
     float roughness;
 };
 
-
 class Scene {
 public:
     std::vector<DirectionalLight> directional_lights;

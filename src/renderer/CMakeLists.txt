@@ -18,13 +18,12 @@ include_directories(${GLFW_INCLUDE_DIR}
                     ${GLM_INCLUDE_DIR}
                     ${YAML_INCLUDE_DIR})
 
-message(${OPENGL_LIBRARIES})
-
 target_link_libraries(renderer ${GLFW_LIBRARIES} 
                                ${Boost_LIBRARIES}
                                ${YAML_LIBRARIES}
                                ${GLEW_LIBRARIES}
                                ${OPENGL_LIBRARIES}
+                               jemalloc
                                lodepng
                                ktx
                                imgui)

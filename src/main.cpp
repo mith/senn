@@ -67,7 +67,11 @@ GLFWwindow* init_gl()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_DEPTH_BITS, 32);
     glfwWindowHint(GLFW_STENCIL_BITS, 0);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "senn", nullptr, nullptr);
+    glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
+
+    int num_monitors;
+    GLFWmonitor** monitors = glfwGetMonitors(&num_monitors);
+    GLFWwindow* window = glfwCreateWindow(1680, 1050, "senn", monitors[1], nullptr);
 
     if (window == nullptr) {
         glfwTerminate();

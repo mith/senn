@@ -60,6 +60,11 @@ Scene SceneLoader::load_from_file(const std::string& filename)
         ktxerror = ktxLoadTextureN(("textures/" + diffuse_filename + ".ktx").c_str(),
                 &material.diffuse.name, &target, nullptr, &is_mipmapped, &glerror, 0, nullptr);
         scene.materials.emplace(it.first.as<std::string>(), std::move(material));
+        GLint intfor;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &intfor);
+        printf("internalformat: %x\n", intfor);
+
+        std::cout << "loaded texture: " << diffuse_filename << std::endl;
     }
 
 
@@ -80,7 +85,7 @@ Scene SceneLoader::load_from_file(const std::string& filename)
 
     scene.shader = shader_loader->load_shader(ShaderDescriptor{"simple.vert", "simple.frag"});
     scene.directional_lights.emplace_back(shader_loader, glm::normalize(glm::vec3(1.0f, 1.0f, 0.5f)));
-    scene.camera.size = {800, 600};
+    scene.camera.size = {1680, 1050};
     scene.camera.fovy = 50.0f;
     glPopDebugGroup();
 

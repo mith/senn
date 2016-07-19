@@ -8,6 +8,7 @@
 #include <glm/gtx/io.hpp>
 
 #include "iqm.h"
+#include "buffer.hpp"
 
 MeshLoader::MeshLoader(const std::string& mesh_dir)
     : mesh_dir(mesh_dir)
@@ -20,8 +21,8 @@ void MeshLoader::update_meshes()
 {
     if (mesh_dir_watcher.dir_changed()) {
         for (auto& loaded_mesh : loaded_meshes) {
-            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, 
-                    ("reloading mesh: " + loaded_mesh.first).c_str());
+            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1,
+                ("reloading mesh: " + loaded_mesh.first).c_str());
             auto mesh = load_mesh_from_file(loaded_mesh.first);
             loaded_mesh.second = std::move(mesh);
             std::cout << "mesh " << loaded_mesh.first << " reloaded" << std::endl;
@@ -55,7 +56,7 @@ Mesh MeshLoader::load_mesh_from_file(const std::string& filename)
     const iqmvertexarray* uvva = vaptr + 1;
     const iqmvertexarray* normalva = vaptr + 2;
 
-    auto positions = reinterpret_cast<const glm::vec3*>(mesh_file.data() + posva->offset);
+    auto positions = reinterpret_cast<const Vertex*>(mesh_file.data() + posva->offset);
     auto normals = reinterpret_cast<const glm::vec3*>(mesh_file.data() + normalva->offset);
     auto texcoords = reinterpret_cast<const glm::vec2*>(mesh_file.data() + uvva->offset);
 
@@ -70,7 +71,13 @@ Mesh MeshLoader::load_mesh_from_file(const std::string& filename)
 
     auto indices = reinterpret_cast<const unsigned int*>(mesh_file.data() + ih->ofs_triangles);
 
-    Mesh mesh;
+    Mesh mesh{
+        make_vertex_buffer(ih->num_vertexes, positions, 0),
+        make_vertex_buffer(attributes.size(), attributes.data(), 0),
+        make_index_buffer(ih->num_triangles * 3, indices, 0),
+        VertexArray(),
+        { (GLint)ih->num_triangles, 0, 0 }
+    };
 
     mesh.draw_command.index_count = ih->num_triangles;
     mesh.draw_command.base_index = 0;
@@ -78,24 +85,15 @@ Mesh MeshLoader::load_mesh_from_file(const std::string& filename)
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, ("creating buffers for mesh: " + filename).c_str());
 
-    glObjectLabel(GL_BUFFER, mesh.vertex_buffer.name, -1, "vertice buffer");
-    glNamedBufferStorage(mesh.vertex_buffer.name, sizeof(Vertex) * ih->num_vertexes,
-        positions, 0);
+    set_object_label(mesh.vertex_buffer, "position buffer");
+    set_object_label(mesh.attribute_buffer, "vertex attributes buffer");
+    set_object_label(mesh.indice_buffer, "indice buffer");
 
-    glObjectLabel(GL_BUFFER, mesh.attribute_buffer.name, -1, "attributes buffer");
-    glNamedBufferStorage(mesh.attribute_buffer.name, sizeof(VertexAttribes) * attributes.size(),
-        attributes.data(), 0);
-
-    glObjectLabel(GL_BUFFER, mesh.indice_buffer.name, -1, "indice buffer");
-    glNamedBufferStorage(mesh.indice_buffer.name, sizeof(unsigned int) * ih->num_triangles * 3,
-        indices, 0);
-
-    glCreateVertexArrays(1, &mesh.vao.name);
     glBindVertexArray(mesh.vao.name);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vertex_buffer.name);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.vertex_buffer.get_name());
     glEnableVertexArrayAttrib(mesh.vao.name, 0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.attribute_buffer.name);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.attribute_buffer.get_name());
     glEnableVertexArrayAttrib(mesh.vao.name, 1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttribes), nullptr);
     glEnableVertexArrayAttrib(mesh.vao.name, 2);
@@ -104,7 +102,7 @@ Mesh MeshLoader::load_mesh_from_file(const std::string& filename)
 
     glPopDebugGroup();
 
-    std::cout << "returning loaded mesh" << std::endl;
+    std::cout << "loaded mesh " << filename << std::endl;
     return mesh;
 }
 

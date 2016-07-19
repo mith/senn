@@ -9,11 +9,21 @@ objects:
       orientation: [0.0, 0.0, 0.0, 0.0]
       scale: [0.4, 0.4, 0.4]
       material: "sphere"
+    - mesh: "sphere"
+      position: [0.0, 0.0, 0.5]
+      orientation: [0.0, 0.0, 0.0, 0.0]
+      scale: [0.4, 0.4, 0.4]
+      material: "sphere"
     - mesh: "halo"
       position: [0.0, 0.0, 0.0]
       scale: [1.0, 1.0, 1.0]
       orientation: [-0.7, 0.0, 0.0, 0.7]
       material: "halo"
+    - mesh: "plane"
+      position: [0.0, -1.0, 0.0]
+      scale: [1.0, 1.0, 1.0]
+      orientation: [-0.7, 0.0, 0.0, 0.7]
+      material: "plane"
 
 lights:
     - color: [3.0, 3.0, 3.0]
@@ -31,3 +41,5 @@ materials:
         diffuse: "cornell_diffuse"
         fresnel0: 0.04
         roughness: 0.8
+    plane:
+        diffuse: "plane_diffuse"
