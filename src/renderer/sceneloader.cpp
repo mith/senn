@@ -60,6 +60,11 @@ Scene SceneLoader::load_from_file(const std::string& filename)
         ktxerror = ktxLoadTextureN(("textures/" + diffuse_filename + ".ktx").c_str(),
                 &material.diffuse.name, &target, nullptr, &is_mipmapped, &glerror, 0, nullptr);
         scene.materials.emplace(it.first.as<std::string>(), std::move(material));
+        GLint intfor;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &intfor);
+        printf("internalformat: %x\n", intfor);
+
+        std::cout << "loaded texture: " << diffuse_filename << std::endl;
     }
 
 
@@ -79,19 +84,9 @@ Scene SceneLoader::load_from_file(const std::string& filename)
     }
 
     scene.shader = shader_loader->load_shader(ShaderDescriptor{"simple.vert", "simple.frag"});
-    glTextureStorage2D(scene.shadowmap_depth_tex.name,
-            1, GL_DEPTH_COMPONENT16, 512, 512);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTextureParameteri(scene.shadowmap_depth_tex.name, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-
-    scene.shadowmap.set_depth_attachment(scene.shadowmap_depth_tex);
-    scene.shadowmap_shader = shader_loader->load_shader(ShaderDescriptor{"shadowmap.vert",
-            "shadowmap.frag"});
-    glNamedFramebufferDrawBuffer(scene.shadowmap.get_name(), GL_NONE);
+    scene.directional_lights.emplace_back(shader_loader, glm::normalize(glm::vec3(1.0f, 1.0f, 0.5f)));
+    scene.camera.size = {1680, 1050};
+    scene.camera.fovy = 50.0f;
     glPopDebugGroup();
 
     return scene;

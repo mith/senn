@@ -8,6 +8,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
 void glfw_error(int error, const char* description)
 {
     std::cerr << "glfw error: " << error << " : " << description << std::endl;
@@ -52,20 +53,6 @@ void gl_error(GLenum source, GLenum type, GLuint id, GLenum severity,
         << std::endl;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    std::cout << "key pressed: " << key << std::endl;
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
-}
-
-void window_resize_callback(GLFWwindow*, int width, int height)
-{
-    glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-}
-
 GLFWwindow* init_gl()
 {
     glfwSetErrorCallback(glfw_error);
@@ -78,7 +65,13 @@ GLFWwindow* init_gl()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    GLFWwindow* window = glfwCreateWindow(512, 512, "senn", nullptr, nullptr);
+    glfwWindowHint(GLFW_DEPTH_BITS, 32);
+    glfwWindowHint(GLFW_STENCIL_BITS, 0);
+    glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
+
+    int num_monitors;
+    GLFWmonitor** monitors = glfwGetMonitors(&num_monitors);
+    GLFWwindow* window = glfwCreateWindow(1680, 1050, "senn", monitors[1], nullptr);
 
     if (window == nullptr) {
         glfwTerminate();
@@ -134,7 +127,11 @@ void set_callbacks(GLFWwindow* window)
         0, nullptr, GL_FALSE);
     glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 1,
         GL_DEBUG_SEVERITY_NOTIFICATION, -1, "gl callback test");
+
+    glfwSwapInterval(1);
+    return window;
 }
+
 
 
 int main()
@@ -147,13 +144,21 @@ int main()
     }
     set_callbacks(window);
     window_resize_callback(window, 512, 512);
+
     rc.refresh_lib(lib_fun, nullptr);
     auto rs = lib_fun.init(window);
-    while (true) {
+
+    while (!glfwWindowShouldClose(window)) {
         if (rc.refresh_lib(lib_fun,rs)) {
             lib_fun.resume(rs);
         }
-        lib_fun.tick(rs);
+        auto do_reinit = lib_fun.tick(rs);
+        if (do_reinit) {
+            std::cout << "reinitializing" << std::endl;
+            lib_fun.finish(rs);
+            rs = lib_fun.init(window);
+        }
     }
+    ImGui::Shutdown();
     std::cout << "fin" << std::endl;
 }

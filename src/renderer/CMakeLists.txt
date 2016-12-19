@@ -4,7 +4,8 @@ project (renderer)
 set(renderer_sources renderer.cpp utils.cpp 
     gl_utils.cpp meshloader.cpp 
     scene.cpp shaderloader.cpp dirwatcher.cpp
-    sceneloader.cpp primitives.cpp)
+    sceneloader.cpp primitives.cpp camera.cpp
+    light.cpp)
 
 add_library(renderer SHARED ${renderer_sources})
 
@@ -17,13 +18,12 @@ include_directories(${GLFW_INCLUDE_DIR}
                     ${GLM_INCLUDE_DIR}
                     ${YAML_INCLUDE_DIR})
 
-message(${OPENGL_LIBRARIES})
-
 target_link_libraries(renderer ${GLFW_LIBRARIES} 
                                ${Boost_LIBRARIES}
                                ${YAML_LIBRARIES}
                                ${GLEW_LIBRARIES}
                                ${OPENGL_LIBRARIES}
+                               jemalloc
                                lodepng
                                ktx
                                imgui)
