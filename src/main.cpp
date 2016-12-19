@@ -73,8 +73,8 @@ GLFWwindow* init_gl()
         throw std::runtime_error("failure initializing glfw");
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -96,6 +96,21 @@ GLFWwindow* init_gl()
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     return window;
+}
+
+bool gl_extension_check()
+{
+  if(!GLEW_ARB_debug_output) {
+    std::cerr << "ARB_debug_output not available" << std::endl;
+  }
+
+  if (!GLEW_ARB_multi_draw_indirect) {
+    std::cerr << "ARB_multi_draw_indirect not available" << std::endl;
+  }
+
+  if (!GLEW_ARB_direct_state_access) {
+    std::cerr << "ARB_direct_state_access not available" << std::endl;
+  }
 }
 
 void set_callbacks(GLFWwindow* window) 
@@ -127,6 +142,9 @@ int main()
     LibReloader rc("../src/renderer", "renderer", "./renderer", "ninja");
     LibFunctions lib_fun;
     auto window = init_gl();
+    if (!gl_extension_check()) {
+      std::exit(EXIT_FAILURE);
+    }
     set_callbacks(window);
     window_resize_callback(window, 512, 512);
     rc.refresh_lib(lib_fun, nullptr);
